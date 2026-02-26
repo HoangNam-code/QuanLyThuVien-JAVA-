@@ -34,6 +34,22 @@ public class NhanVienBUS {
         return "Thêm thất bại!";
     }
 
+    public ArrayList<NhanVienDTO> timKiem(String tuKhoa) {
+        ArrayList<NhanVienDTO> ketQua = new ArrayList<>();
+        
+        // Chuyển từ khóa về chữ thường để tìm kiếm không phân biệt hoa thường
+        String keyword = tuKhoa.toLowerCase();
+        
+        for (NhanVienDTO nv : listNV) {
+            // Tìm theo Tên hoặc Mã nhân viên (tùy bạn chọn thuộc tính)
+            if (nv.getTen().toLowerCase().contains(keyword) || 
+                nv.getMaNV().toLowerCase().contains(keyword)) {
+                ketQua.add(nv);
+            }
+        }
+        return ketQua;
+    }
+    
     public String suaNhanVien(NhanVienDTO nv) {
         if (nvDAO.update(nv) > 0) {
             // Cập nhật lại trong list bộ nhớ đệm
