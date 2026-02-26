@@ -2,13 +2,16 @@ package gui;
 
 import bus.NhanVienBUS;
 import dto.NhanVienDTO;
-import java.awt.*;
+import java.awt.*; // Import file tiện ích vừa tạo
 import java.awt.event.*;
+import java.io.File;
 import java.sql.Date;
 import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import util.ExcelHelper;
 
 public class QuanLyNhanVienPanel extends JPanel {
 
@@ -16,138 +19,210 @@ public class QuanLyNhanVienPanel extends JPanel {
     private JTable tblNhanVien;
     private DefaultTableModel model;
     
-    // Các ô nhập liệu
-    private JTextField txtMa, txtHo, txtTen, txtSDT, txtEmail, txtDiaChi, txtNgaySinh;
+    // Nhập liệu
+    private JTextField txtMa, txtHo, txtTen, txtSDT, txtEmail, txtNgaySinh;
     private JComboBox<String> cboGioiTinh, cboChucVu;
+    
+    // Nút chức năng
     private JButton btnThem, btnSua, btnXoa, btnLamMoi;
+    
+    // --- MỚI: Phần Tìm kiếm & Excel ---
+    private JTextField txtTimKiem;
+    private JButton btnTimKiem, btnNhapExcel, btnXuatExcel;
 
     public QuanLyNhanVienPanel() {
         initComponents();
-        loadDataLenBang();
+        loadDataLenBang(nvBUS.getList()); // Load dữ liệu ban đầu
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         // 1. Tiêu đề
         JLabel lblTitle = new JLabel("QUẢN LÝ NHÂN VIÊN");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(new Color(25, 118, 210));
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         add(lblTitle, BorderLayout.NORTH);
 
-        // 2. Bảng danh sách (Ở giữa)
+        // ===================================================================
+        // 2. THANH CÔNG CỤ (TÌM KIẾM + EXCEL) - MỚI
+        // ===================================================================
+        JPanel pnlToolBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pnlToolBar.setBorder(new TitledBorder("Chức năng mở rộng"));
+
+        txtTimKiem = new JTextField(20);
+        btnTimKiem = new JButton("Tìm kiếm");
+        btnNhapExcel = new JButton("Nhập Excel");
+        btnXuatExcel = new JButton("Xuất Excel");
+        
+        styleButton(btnTimKiem); styleButton(btnNhapExcel); styleButton(btnXuatExcel);
+        // Đổi màu nút Excel cho khác biệt
+        btnNhapExcel.setBackground(new Color(46, 125, 50)); // Màu xanh lá Excel
+        btnXuatExcel.setBackground(new Color(46, 125, 50));
+
+        pnlToolBar.add(new JLabel("Từ khóa:"));
+        pnlToolBar.add(txtTimKiem);
+        pnlToolBar.add(btnTimKiem);
+        pnlToolBar.add(Box.createHorizontalStrut(20)); // Khoảng cách
+        pnlToolBar.add(btnNhapExcel);
+        pnlToolBar.add(btnXuatExcel);
+
+        // ===================================================================
+        // 3. BẢNG DỮ LIỆU
+        // ===================================================================
         String[] columns = {"Mã NV", "Họ đệm", "Tên", "Ngày sinh", "Giới tính", "SĐT", "Email", "Chức vụ"};
         model = new DefaultTableModel(columns, 0);
         tblNhanVien = new JTable(model);
-        tblNhanVien.setRowHeight(30);
+        tblNhanVien.setRowHeight(25);
         tblNhanVien.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
-        // Sự kiện click bảng
+        // Click bảng đổ dữ liệu xuống form
         tblNhanVien.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = tblNhanVien.getSelectedRow();
                 if (row >= 0) {
-                    txtMa.setText(model.getValueAt(row, 0).toString());
-                    txtHo.setText(model.getValueAt(row, 1).toString());
-                    txtTen.setText(model.getValueAt(row, 2).toString());
-                    txtNgaySinh.setText(model.getValueAt(row, 3).toString());
-                    cboGioiTinh.setSelectedItem(model.getValueAt(row, 4).toString());
-                    txtSDT.setText(model.getValueAt(row, 5).toString());
-                    txtEmail.setText(model.getValueAt(row, 6).toString());
-                    cboChucVu.setSelectedItem(model.getValueAt(row, 7).toString());
-                    txtMa.setEditable(false); // Không cho sửa mã
+                    txtMa.setText(getValue(row, 0));
+                    txtHo.setText(getValue(row, 1));
+                    txtTen.setText(getValue(row, 2));
+                    txtNgaySinh.setText(getValue(row, 3));
+                    cboGioiTinh.setSelectedItem(getValue(row, 4));
+                    txtSDT.setText(getValue(row, 5));
+                    txtEmail.setText(getValue(row, 6));
+                    cboChucVu.setSelectedItem(getValue(row, 7));
+                    txtMa.setEditable(false);
                 }
             }
         });
-        
-        JScrollPane sc = new JScrollPane(tblNhanVien);
-        add(sc, BorderLayout.CENTER);
 
-        // 3. Form nhập liệu (Bên dưới)
+        // ===================================================================
+        // 4. FORM NHẬP LIỆU & NÚT CRUD
+        // ===================================================================
+        JPanel pnlCenter = new JPanel(new BorderLayout());
+        pnlCenter.add(pnlToolBar, BorderLayout.NORTH); // Thêm thanh tìm kiếm lên trên bảng
+        pnlCenter.add(new JScrollPane(tblNhanVien), BorderLayout.CENTER);
+        
+        add(pnlCenter, BorderLayout.CENTER);
+
+        // Panel dưới cùng (Form + Nút Thêm/Xóa/Sửa)
+        JPanel pnlSouth = new JPanel(new BorderLayout());
+        
         JPanel pnlInput = new JPanel(new GridLayout(4, 4, 10, 10));
-        pnlInput.setBorder(new TitledBorder("Thông tin nhân viên"));
-        pnlInput.setPreferredSize(new Dimension(0, 200));
-
-        pnlInput.add(new JLabel("Mã NV:"));
-        txtMa = new JTextField(); pnlInput.add(txtMa);
+        pnlInput.setBorder(new TitledBorder("Thông tin chi tiết"));
         
-        pnlInput.add(new JLabel("Ngày sinh (yyyy-mm-dd):"));
-        txtNgaySinh = new JTextField(); pnlInput.add(txtNgaySinh);
+        // Khởi tạo các ô nhập
+        txtMa = new JTextField(); txtHo = new JTextField(); txtTen = new JTextField();
+        txtSDT = new JTextField(); txtEmail = new JTextField(); txtNgaySinh = new JTextField();
+        cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
+        cboChucVu = new JComboBox<>(new String[]{"Thu Thu", "Quan Ly", "Bao Ve"});
 
-        pnlInput.add(new JLabel("Họ đệm:"));
-        txtHo = new JTextField(); pnlInput.add(txtHo);
+        pnlInput.add(new JLabel("Mã NV:")); pnlInput.add(txtMa);
+        pnlInput.add(new JLabel("Họ đệm:")); pnlInput.add(txtHo);
+        pnlInput.add(new JLabel("Tên:")); pnlInput.add(txtTen);
+        pnlInput.add(new JLabel("Ngày sinh:")); pnlInput.add(txtNgaySinh);
+        pnlInput.add(new JLabel("Giới tính:")); pnlInput.add(cboGioiTinh);
+        pnlInput.add(new JLabel("SĐT:")); pnlInput.add(txtSDT);
+        pnlInput.add(new JLabel("Email:")); pnlInput.add(txtEmail);
+        pnlInput.add(new JLabel("Chức vụ:")); pnlInput.add(cboChucVu);
 
-        pnlInput.add(new JLabel("Giới tính:"));
-        cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"}); pnlInput.add(cboGioiTinh);
-
-        pnlInput.add(new JLabel("Tên:"));
-        txtTen = new JTextField(); pnlInput.add(txtTen);
-
-        pnlInput.add(new JLabel("SĐT:"));
-        txtSDT = new JTextField(); pnlInput.add(txtSDT);
-        
-        pnlInput.add(new JLabel("Email:"));
-        txtEmail = new JTextField(); pnlInput.add(txtEmail);
-        
-        pnlInput.add(new JLabel("Chức vụ:"));
-        cboChucVu = new JComboBox<>(new String[]{"Thu Thu", "Quan Ly", "Bao Ve", "Tap Vu"}); pnlInput.add(cboChucVu);
-
-        // 4. Các nút chức năng
-        JPanel pnlButtons = new JPanel();
+        JPanel pnlCRUDButtons = new JPanel();
         btnThem = new JButton("Thêm");
         btnSua = new JButton("Sửa");
         btnXoa = new JButton("Xóa");
         btnLamMoi = new JButton("Làm mới");
         
         styleButton(btnThem); styleButton(btnSua); styleButton(btnXoa); styleButton(btnLamMoi);
+        pnlCRUDButtons.add(btnThem); pnlCRUDButtons.add(btnSua);
+        pnlCRUDButtons.add(btnXoa); pnlCRUDButtons.add(btnLamMoi);
 
-        pnlButtons.add(btnThem);
-        pnlButtons.add(btnSua);
-        pnlButtons.add(btnXoa);
-        pnlButtons.add(btnLamMoi);
+        pnlSouth.add(pnlInput, BorderLayout.CENTER);
+        pnlSouth.add(pnlCRUDButtons, BorderLayout.SOUTH);
+        add(pnlSouth, BorderLayout.SOUTH);
+
+        // ===================================================================
+        // 5. XỬ LÝ SỰ KIỆN (EVENTS)
+        // ===================================================================
         
-        // Sự kiện nút Thêm
-        btnThem.addActionListener(e -> {
-            try {
-                NhanVienDTO nv = new NhanVienDTO(
-                    txtMa.getText(), txtHo.getText(), txtTen.getText(),
-                    Date.valueOf(txtNgaySinh.getText()), 
-                    cboGioiTinh.getSelectedItem().toString(),
-                    txtSDT.getText(), "", txtEmail.getText(),
-                    cboChucVu.getSelectedItem().toString()
-                );
-                JOptionPane.showMessageDialog(this, nvBUS.themNhanVien(nv));
-                loadDataLenBang();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi nhập liệu: " + ex.getMessage());
+        // --- TÌM KIẾM ---
+        btnTimKiem.addActionListener(e -> {
+            String tuKhoa = txtTimKiem.getText();
+            loadDataLenBang(nvBUS.timKiem(tuKhoa));
+        });
+
+        // --- NHẬP EXCEL ---
+        btnNhapExcel.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx"));
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = chooser.getSelectedFile();
+                    ArrayList<NhanVienDTO> listImport = ExcelHelper.importNhanVien(file.getAbsolutePath());
+                    
+                    // Lưu vào DB
+                    int count = 0;
+                    for (NhanVienDTO nv : listImport) {
+                        if (nvBUS.themNhanVien(nv).contains("thành công")) count++;
+                    }
+                    JOptionPane.showMessageDialog(this, "Đã nhập thành công " + count + " nhân viên!");
+                    loadDataLenBang(nvBUS.getList());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi nhập file: " + ex.getMessage());
+                }
             }
         });
-        
-        // Sự kiện nút Xóa
+
+        // --- XUẤT EXCEL ---
+        btnXuatExcel.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx"));
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    String path = chooser.getSelectedFile().getAbsolutePath();
+                    if (!path.endsWith(".xlsx")) path += ".xlsx";
+                    ExcelHelper.exportExcel(tblNhanVien, path);
+                    JOptionPane.showMessageDialog(this, "Xuất file thành công!");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi xuất file: " + ex.getMessage());
+                }
+            }
+        });
+
+        // --- CÁC NÚT CRUD (NHƯ CŨ) ---
+        btnThem.addActionListener(e -> {
+            try {
+                NhanVienDTO nv = getNhanVienFromForm();
+                JOptionPane.showMessageDialog(this, nvBUS.themNhanVien(nv));
+                loadDataLenBang(nvBUS.getList());
+            } catch(Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
+        });
+
+        btnSua.addActionListener(e -> {
+            try {
+                NhanVienDTO nv = getNhanVienFromForm();
+                JOptionPane.showMessageDialog(this, nvBUS.suaNhanVien(nv));
+                loadDataLenBang(nvBUS.getList());
+            } catch(Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage()); }
+        });
+
         btnXoa.addActionListener(e -> {
-            String ma = txtMa.getText();
-            if(JOptionPane.showConfirmDialog(this, "Xóa nhân viên " + ma + "?") == JOptionPane.YES_OPTION) {
-                JOptionPane.showMessageDialog(this, nvBUS.xoaNhanVien(ma));
-                loadDataLenBang();
+            if (JOptionPane.showConfirmDialog(this, "Xóa nhân viên này?") == JOptionPane.YES_OPTION) {
+                JOptionPane.showMessageDialog(this, nvBUS.xoaNhanVien(txtMa.getText()));
+                loadDataLenBang(nvBUS.getList());
                 lamMoiForm();
             }
         });
-        
-        // Sự kiện Làm mới
-        btnLamMoi.addActionListener(e -> lamMoiForm());
 
-        // Gom Form và Nút vào Panel phía Nam
-        JPanel pnlSouth = new JPanel(new BorderLayout());
-        pnlSouth.add(pnlInput, BorderLayout.CENTER);
-        pnlSouth.add(pnlButtons, BorderLayout.SOUTH);
-        add(pnlSouth, BorderLayout.SOUTH);
+        btnLamMoi.addActionListener(e -> {
+            lamMoiForm();
+            loadDataLenBang(nvBUS.getList()); // Load lại toàn bộ (bỏ tìm kiếm)
+        });
     }
+
+    // --- HÀM HỖ TRỢ ---
     
-    private void loadDataLenBang() {
-        nvBUS.docDanhSach();
-        ArrayList<NhanVienDTO> list = nvBUS.getList();
+    // Load dữ liệu linh hoạt (cho cả lúc đầu và lúc tìm kiếm)
+    private void loadDataLenBang(ArrayList<NhanVienDTO> list) {
         model.setRowCount(0);
         for (NhanVienDTO nv : list) {
             model.addRow(new Object[]{
@@ -156,12 +231,26 @@ public class QuanLyNhanVienPanel extends JPanel {
             });
         }
     }
-    
+
+    private NhanVienDTO getNhanVienFromForm() {
+        return new NhanVienDTO(
+            txtMa.getText(), txtHo.getText(), txtTen.getText(),
+            Date.valueOf(txtNgaySinh.getText()), 
+            cboGioiTinh.getSelectedItem().toString(),
+            txtSDT.getText(), "", txtEmail.getText(),
+            cboChucVu.getSelectedItem().toString()
+        );
+    }
+
+    private String getValue(int row, int col) {
+        return model.getValueAt(row, col).toString();
+    }
+
     private void lamMoiForm() {
         txtMa.setText(""); txtMa.setEditable(true);
         txtHo.setText(""); txtTen.setText("");
         txtSDT.setText(""); txtEmail.setText("");
-        txtNgaySinh.setText("");
+        txtNgaySinh.setText(""); txtTimKiem.setText("");
     }
     
     private void styleButton(JButton btn) {
