@@ -103,7 +103,7 @@ public class MainFrame extends JFrame {
 
         taoNutMenu(pnlCenter, "Trang chủ", "HOME", "home.png");
         taoNutMenu(pnlCenter, "Quản lý Sách", "SACH", "book.png");
-        taoNutMenu(pnlCenter, "Độc giả", "DOCGIA", "reader.png"); // Gọi Card Name là DOCGIA
+        taoNutMenu(pnlCenter, "Độc giả", "DOCGIA", "reader.png"); 
         taoNutMenu(pnlCenter, "Mượn - Trả", "MUONTRA", "borrow.png");
         taoNutMenu(pnlCenter, "Nhập hàng", "NHAPHANG", "import.png");
         taoNutMenu(pnlCenter, "Thống kê", "THONGKE", "stat.png");
@@ -137,14 +137,17 @@ public class MainFrame extends JFrame {
 
         // --- Add các Panel VÀO CARDLAYOUT ---
         pnlContent.add(createDummyPanel("TRANG CHỦ", Color.WHITE), "HOME");
-        pnlContent.add(createDummyPanel("QUẢN LÝ SÁCH", new Color(240, 248, 255)), "SACH");
         pnlContent.add(createDummyPanel("MƯỢN - TRẢ SÁCH", new Color(240, 255, 240)), "MUONTRA");
         pnlContent.add(createDummyPanel("NHẬP HÀNG", Color.LIGHT_GRAY), "NHAPHANG");
         pnlContent.add(createDummyPanel("THỐNG KÊ", Color.ORANGE), "THONGKE");
         
-        // Thêm các Panel thật đã code (Lưu ý: Card Name phải khớp 100% với taoNutMenu)
+        // --- ĐÂY LÀ ĐIỂM QUAN TRỌNG NHẤT: KẾT NỐI CÁC GIAO DIỆN THẬT ---
+        
+        pnlContent.add(new QuanLySachPanel(), "SACH"); 
+        
+        // Kết nối các Panel của các thành viên khác đã code
         pnlContent.add(new QuanLyNhanVienPanel(), "NHANVIEN");
-        pnlContent.add(new QuanLyDocGiaPanel(), "DOCGIA"); // Đã gỡ bỏ cái Dummy Panel cũ và thay bằng Panel thật
+        pnlContent.add(new QuanLyDocGiaPanel(), "DOCGIA"); 
 
         add(pnlMenu, BorderLayout.WEST);
         add(pnlContent, BorderLayout.CENTER);
