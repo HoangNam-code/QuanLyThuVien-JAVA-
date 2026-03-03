@@ -36,28 +36,26 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // =====================================================================
-        // 1. SIDEBAR MENU (BÊN TRÁI - ĐÃ CHỈNH SỬA)
+        // 1. SIDEBAR MENU (BÊN TRÁI)
         // =====================================================================
         pnlMenu = new JPanel();
         pnlMenu.setBackground(COLOR_MAIN);
-        // Quan trọng: Set kích thước cố định cho Sidebar là 250px
         pnlMenu.setPreferredSize(new Dimension(250, 0)); 
-        pnlMenu.setLayout(new BorderLayout()); // Dùng BorderLayout để dễ quản lý Trên - Giữa - Dưới
+        pnlMenu.setLayout(new BorderLayout()); 
 
         // --- PHẦN TRÊN: LOGO & INFO USER (GÓC TRÊN TRÁI) ---
         JPanel pnlTop = new JPanel();
         pnlTop.setBackground(COLOR_MAIN);
         pnlTop.setLayout(new BoxLayout(pnlTop, BoxLayout.Y_AXIS));
-        pnlTop.setBorder(new EmptyBorder(20, 10, 20, 10)); // Padding xung quanh
+        pnlTop.setBorder(new EmptyBorder(20, 10, 20, 10)); 
 
-        // Logo SGU nhỏ & Tên trường
         JPanel pnlLogo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlLogo.setBackground(COLOR_MAIN);
-        pnlLogo.setAlignmentX(Component.LEFT_ALIGNMENT); // Căn trái toàn bộ
+        pnlLogo.setAlignmentX(Component.LEFT_ALIGNMENT); 
 
         JLabel lblLogoSmall = new JLabel();
         try {
-            ImageIcon icon = new ImageIcon(getClass().getResource("/img/sgu_logo.png")); // File logo của bạn
+            ImageIcon icon = new ImageIcon(getClass().getResource("/img/sgu_logo.png")); 
             Image img = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
             lblLogoSmall.setIcon(new ImageIcon(img));
         } catch (Exception e) {}
@@ -67,31 +65,28 @@ public class MainFrame extends JFrame {
         pnlLogo.add(lblLogoSmall);
         pnlLogo.add(lblSGU);
 
-        // Info User (Xin chào...)
         JPanel pnlUser = new JPanel();
         pnlUser.setLayout(new BoxLayout(pnlUser, BoxLayout.Y_AXIS));
         pnlUser.setBackground(COLOR_MAIN);
         pnlUser.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pnlUser.setBorder(new EmptyBorder(15, 5, 0, 0)); // Cách logo một chút
+        pnlUser.setBorder(new EmptyBorder(15, 5, 0, 0)); 
 
         JLabel lblHello = new JLabel("Xin chào, " + taiKhoan.getTenDangNhap());
         lblHello.setForeground(Color.WHITE);
         lblHello.setFont(new Font("Segoe UI", Font.BOLD, 14));
         
         JLabel lblRole = new JLabel(taiKhoan.getQuyenHan()); 
-        lblRole.setForeground(new Color(220, 220, 220)); // Màu xám nhạt
+        lblRole.setForeground(new Color(220, 220, 220)); 
         lblRole.setFont(new Font("Segoe UI", Font.ITALIC, 12));
 
         pnlUser.add(lblHello);
         pnlUser.add(Box.createRigidArea(new Dimension(0, 3)));
         pnlUser.add(lblRole);
 
-        // Add Logo và User vào Top Panel
         pnlTop.add(pnlLogo);
         pnlTop.add(pnlUser);
         pnlTop.add(Box.createRigidArea(new Dimension(0, 10)));
         
-        // Đường kẻ phân cách
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(255, 255, 255, 80));
         pnlTop.add(sep);
@@ -100,7 +95,7 @@ public class MainFrame extends JFrame {
         JPanel pnlCenter = new JPanel();
         pnlCenter.setBackground(COLOR_MAIN);
         pnlCenter.setLayout(new BoxLayout(pnlCenter, BoxLayout.Y_AXIS));
-        pnlCenter.setBorder(new EmptyBorder(10, 0, 0, 0)); // Padding đỉnh
+        pnlCenter.setBorder(new EmptyBorder(10, 0, 0, 0)); 
 
         taoNutMenu(pnlCenter, "Trang chủ", "HOME", "home.png");
         taoNutMenu(pnlCenter, "Quản lý Sách", "SACH", "book.png");
@@ -116,34 +111,37 @@ public class MainFrame extends JFrame {
         pnlBottom.setBorder(new EmptyBorder(0, 0, 20, 0));
 
         JButton btnLogout = createMenuButton("Đăng xuất", "logout.png");
-        btnLogout.setBackground(new Color(211, 47, 47)); // Đỏ
-        btnLogout.setPreferredSize(new Dimension(200, 40)); // Nút nhỏ gọn hơn
+        btnLogout.setBackground(new Color(211, 47, 47)); 
+        btnLogout.setPreferredSize(new Dimension(200, 40)); 
         btnLogout.setMaximumSize(new Dimension(200, 40));
-        btnLogout.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa chữ
+        btnLogout.setHorizontalAlignment(SwingConstants.CENTER); 
         btnLogout.addActionListener(e -> dangXuat());
         
         pnlBottom.add(btnLogout);
 
-        // Lắp ráp Sidebar
         pnlMenu.add(pnlTop, BorderLayout.NORTH);
         pnlMenu.add(pnlCenter, BorderLayout.CENTER);
         pnlMenu.add(pnlBottom, BorderLayout.SOUTH);
 
         // =====================================================================
-        // 2. CONTENT PANEL (BÊN PHẢI)
+        // 2. CONTENT PANEL (BÊN PHẢI) - ĐÃ CẬP NHẬT CÁC PANEL THẬT
         // =====================================================================
         cardLayout = new CardLayout();
         pnlContent = new JPanel(cardLayout);
         pnlContent.setBackground(Color.WHITE);
 
-        // Add các Panel giả lập
+        // Add các Panel thật vào hệ thống thay vì DummyPanel
         pnlContent.add(createDummyPanel("TRANG CHỦ", Color.WHITE), "HOME");
-        pnlContent.add(createDummyPanel("QUẢN LÝ SÁCH", new Color(240, 248, 255)), "SACH");
-        pnlContent.add(createDummyPanel("QUẢN LÝ ĐỘC GIẢ", new Color(255, 245, 238)), "DOCGIA");
+        
+        // --- CÁC PANEL ĐÃ ĐƯỢC KẾT NỐI ---
+        pnlContent.add(new QuanLySachPanel(), "SACH");
+        pnlContent.add(new QuanLyDocGiaPanel(), "DOCGIA");
+        pnlContent.add(new QuanLyNhanVienPanel(), "NHANVIEN");
+        
+        // Các tính năng chưa code xong vẫn giữ DummyPanel tạm thời
         pnlContent.add(createDummyPanel("MƯỢN - TRẢ SÁCH", new Color(240, 255, 240)), "MUONTRA");
         pnlContent.add(createDummyPanel("NHẬP HÀNG", Color.LIGHT_GRAY), "NHAPHANG");
         pnlContent.add(createDummyPanel("THỐNG KÊ", Color.ORANGE), "THONGKE");
-        pnlContent.add(new QuanLyNhanVienPanel(), "NHANVIEN");
 
         add(pnlMenu, BorderLayout.WEST);
         add(pnlContent, BorderLayout.CENTER);
@@ -152,13 +150,11 @@ public class MainFrame extends JFrame {
     // --- HÀM TẠO NÚT MENU ---
     private void taoNutMenu(JPanel panel, String title, String cardName, String iconName) {
         JButton btn = createMenuButton(title, iconName);
-        // Hack: Ép nút dãn hết chiều ngang của panel cha (250px)
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); 
         
         btn.addActionListener(e -> {
             resetButtonColor();
             btn.setBackground(COLOR_HOVER); 
-            // Hiệu ứng viền trái
             btn.setBorder(BorderFactory.createCompoundBorder(
                 new MatteBorder(0, 5, 0, 0, Color.WHITE), 
                 new EmptyBorder(10, 15, 10, 10) 
@@ -174,10 +170,10 @@ public class MainFrame extends JFrame {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.setForeground(COLOR_TEXT);
         btn.setBackground(COLOR_MAIN);
-        btn.setBorder(new EmptyBorder(10, 20, 10, 10)); // Padding mặc định
+        btn.setBorder(new EmptyBorder(10, 20, 10, 10)); 
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setHorizontalAlignment(SwingConstants.LEFT); // Căn trái nội dung
+        btn.setHorizontalAlignment(SwingConstants.LEFT); 
         
         if (iconName != null) {
             try {
@@ -196,7 +192,7 @@ public class MainFrame extends JFrame {
     private void resetButtonColor() {
         for (JButton btn : listButtons) {
             btn.setBackground(COLOR_MAIN);
-            btn.setBorder(new EmptyBorder(10, 20, 10, 10)); // Trả về không viền
+            btn.setBorder(new EmptyBorder(10, 20, 10, 10)); 
         }
     }
 

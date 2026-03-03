@@ -159,29 +159,10 @@ public class QuanLySachPanel extends JPanel {
         });
         
         btnTimKiemNC.addActionListener(e -> {
-            // Mở cửa sổ Tìm kiếm nâng cao
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            TimKiemNangCaoDialog dialog = new TimKiemNangCaoDialog(parentWindow);
-            dialog.setVisible(true); // Tạm dừng ở đây chờ người dùng nhập
-            
-            // Nếu người dùng bấm "Tìm Kiếm" trên form đó
-            if (dialog.isConfirm()) {
-                String ten = dialog.getTenSach();
-                String maTG = dialog.getMaTG();
-                String maTL = dialog.getMaTL();
-                double minGia = dialog.getGiaTu();
-                double maxGia = dialog.getGiaDen();
-                
-                // Gọi BUS để tìm kiếm dưới Database
-                ArrayList<SachDTO> ketQua = sachBUS.timKiemNangCao(ten, maTL, maTG, minGia, maxGia);
-                
-                // Cập nhật lại Bảng
-                loadDataLenBang(ketQua);
-                
-                if (ketQua.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Không tìm thấy cuốn sách nào khớp với các điều kiện trên!");
-                }
-            }
+            // Mở cửa sổ Tìm kiếm nâng cao dành riêng cho Sách
+            // Truyền this (Panel hiện tại) và sachBUS sang Dialog giống như bên Nhân Viên
+            TimKiemNangCaoSachDialog dialog = new TimKiemNangCaoSachDialog(this, sachBUS);
+            dialog.setVisible(true); 
         });
     }
 
@@ -245,7 +226,7 @@ public class QuanLySachPanel extends JPanel {
         for (NhaXuatBanDTO nxb : listNXB) cboNXB.addItem(nxb.getMaNXB() + " - " + nxb.getTenNXB());
     }
 
-    private void loadDataLenBang(ArrayList<SachDTO> list) {
+    public void loadDataLenBang(ArrayList<SachDTO> list) {
         model.setRowCount(0);
         for (SachDTO s : list) {
             model.addRow(new Object[]{
