@@ -1,162 +1,172 @@
 package gui;
 
-import dao.TacGiaDAO;
-import dao.TheLoaiDAO;
-import dto.TacGiaDTO;
-import dto.TheLoaiDTO;
+import bus.NhanVienBUS;
+import dto.NhanVienDTO;
 import java.awt.*;
-import java.awt.event.*;
+import java.sql.Date;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 public class TimKiemNangCaoDialog extends JDialog {
 
-    private JTextField txtTenSach, txtGiaTu, txtGiaDen;
-    private JComboBox<String> cboTacGia, cboTheLoai;
-    private JButton btnTimKiem, btnHuy;
-    
-    private boolean isConfirm = false; 
+    private QuanLyNhanVienPanel parentPanel;
+    private NhanVienBUS nvBUS;
 
-    public TimKiemNangCaoDialog(Window parent) {
-        super(parent, "Tìm Kiếm Nâng Cao", Dialog.ModalityType.APPLICATION_MODAL);
+    // Nhóm 1
+    private JTextField txtMa, txtHo, txtTen, txtSDT, txtEmail;
+    // Nhóm 2
+    private JComboBox<String> cboGioiTinh, cboChucVu;
+    // Nhóm 3
+    private JTextField txtTuNgay, txtDenNgay;
+
+    private final Color COLOR_PRIMARY = new Color(0, 102, 204);
+    private final Color COLOR_WARNING = new Color(255, 153, 0);
+
+    public TimKiemNangCaoDialog(QuanLyNhanVienPanel parentPanel, NhanVienBUS nvBUS) {
+        this.parentPanel = parentPanel;
+        this.nvBUS = nvBUS;
+        
+        setTitle("Tìm kiếm nhân viên nâng cao");
+        setSize(550, 550);
+        setLocationRelativeTo(null); // Giữa màn hình
+        setModal(true); // Chặn thao tác màn hình dưới khi mở dialog này
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+
         initComponents();
-        loadComboBoxData();
-        pack(); 
-        setLocationRelativeTo(parent); 
     }
 
     private void initComponents() {
-        JPanel pnlMain = new JPanel(new BorderLayout(10, 10));
-        pnlMain.setBorder(new EmptyBorder(20, 20, 20, 20));
+        JPanel pnlMain = new JPanel();
+        pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
         pnlMain.setBackground(Color.WHITE);
+        pnlMain.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // --- Tiêu đề ---
-        JLabel lblTitle = new JLabel("TÌM KIẾM SÁCH NÂNG CAO");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setForeground(new Color(25, 118, 210));
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        pnlMain.add(lblTitle, BorderLayout.NORTH);
+        // ================= NHÓM 1: THÔNG TIN CÁ NHÂN =================
+        JPanel pnlGroup1 = createGroupPanel("Nhóm 1: Thông tin cá nhân");
+        pnlGroup1.setLayout(new GridLayout(5, 2, 10, 10));
+        
+        pnlGroup1.add(new JLabel("Mã nhân viên:")); txtMa = new JTextField(); pnlGroup1.add(txtMa);
+        pnlGroup1.add(new JLabel("Họ đệm:")); txtHo = new JTextField(); pnlGroup1.add(txtHo);
+        pnlGroup1.add(new JLabel("Tên:")); txtTen = new JTextField(); pnlGroup1.add(txtTen);
+        pnlGroup1.add(new JLabel("Số điện thoại:")); txtSDT = new JTextField(); pnlGroup1.add(txtSDT);
+        pnlGroup1.add(new JLabel("Email:")); txtEmail = new JTextField(); pnlGroup1.add(txtEmail);
 
-        // --- Khung nhập liệu ---
-        JPanel pnlInput = new JPanel(new GridLayout(5, 2, 10, 15));
-        pnlInput.setBackground(Color.WHITE);
+        // ================= NHÓM 2: PHÂN LOẠI =================
+        JPanel pnlGroup2 = createGroupPanel("Nhóm 2: Phân loại");
+        pnlGroup2.setLayout(new GridLayout(2, 2, 10, 10));
+        
+        pnlGroup2.add(new JLabel("Giới tính:"));
+        cboGioiTinh = new JComboBox<>(new String[]{"Tất cả", "Nam", "Nữ"});
+        cboGioiTinh.setBackground(Color.WHITE);
+        pnlGroup2.add(cboGioiTinh);
 
-        txtTenSach = new JTextField();
-        cboTacGia = new JComboBox<>();
-        cboTheLoai = new JComboBox<>();
-        txtGiaTu = new JTextField();
-        txtGiaDen = new JTextField();
+        pnlGroup2.add(new JLabel("Chức vụ:"));
+        cboChucVu = new JComboBox<>(new String[]{"Tất cả", "Thu Thu", "Quan Ly", "Bao Ve", "Tap Vu"});
+        cboChucVu.setBackground(Color.WHITE);
+        pnlGroup2.add(cboChucVu);
 
-        Font fontLabel = new Font("Segoe UI", Font.BOLD, 14);
-        Font fontInput = new Font("Segoe UI", Font.PLAIN, 14);
+        // ================= NHÓM 3: NGÀY SINH =================
+        JPanel pnlGroup3 = createGroupPanel("Nhóm 3: Khoảng ngày sinh (yyyy-mm-dd)");
+        pnlGroup3.setLayout(new GridLayout(2, 2, 10, 10));
+        
+        pnlGroup3.add(new JLabel("Từ ngày:")); 
+        txtTuNgay = new JTextField(); 
+        txtTuNgay.setToolTipText("VD: 1990-01-01");
+        pnlGroup3.add(txtTuNgay);
 
-        addFormItem(pnlInput, "Tên Sách (có thể bỏ trống ):", txtTenSach, fontLabel, fontInput);
-        addFormItem(pnlInput, "Tác Giả:", cboTacGia, fontLabel, fontInput);
-        addFormItem(pnlInput, "Thể Loại:", cboTheLoai, fontLabel, fontInput);
-        addFormItem(pnlInput, "Giá từ (VNĐ):", txtGiaTu, fontLabel, fontInput);
-        addFormItem(pnlInput, "Giá đến (VNĐ):", txtGiaDen, fontLabel, fontInput);
+        pnlGroup3.add(new JLabel("Đến ngày:")); 
+        txtDenNgay = new JTextField(); 
+        txtDenNgay.setToolTipText("VD: 2005-12-31");
+        pnlGroup3.add(txtDenNgay);
 
-        pnlMain.add(pnlInput, BorderLayout.CENTER);
+        // Thêm các nhóm vào Panel chính
+        pnlMain.add(pnlGroup1);
+        pnlMain.add(Box.createRigidArea(new Dimension(0, 10)));
+        pnlMain.add(pnlGroup2);
+        pnlMain.add(Box.createRigidArea(new Dimension(0, 10)));
+        pnlMain.add(pnlGroup3);
 
-        // --- Nút bấm ---
-        JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-        pnlBtn.setBackground(Color.WHITE);
-        pnlBtn.setBorder(new EmptyBorder(15, 0, 0, 0));
+        add(pnlMain, BorderLayout.CENTER);
 
-        btnTimKiem = new JButton("Tìm Kiếm");
-        btnTimKiem.setBackground(new Color(46, 204, 113));
+        // ================= PANEL NÚT BẤM =================
+        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        pnlButtons.setBackground(Color.WHITE);
+
+        JButton btnTimKiem = new JButton("Tìm kiếm ngay");
+        btnTimKiem.setBackground(COLOR_WARNING); // Màu cam
         btnTimKiem.setForeground(Color.WHITE);
         btnTimKiem.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnTimKiem.setPreferredSize(new Dimension(150, 35));
         btnTimKiem.setFocusPainted(false);
-        btnTimKiem.setOpaque(true); btnTimKiem.setBorderPainted(false);
-
-        btnHuy = new JButton("Hủy");
-        btnHuy.setBackground(new Color(231, 76, 60));
-        btnHuy.setForeground(Color.WHITE);
-        btnHuy.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnHuy.setPreferredSize(new Dimension(100, 35));
-        btnHuy.setFocusPainted(false);
-        btnHuy.setOpaque(true); btnHuy.setBorderPainted(false);
-
-        pnlBtn.add(btnTimKiem);
-        pnlBtn.add(btnHuy);
-        pnlMain.add(pnlBtn, BorderLayout.SOUTH);
-
-        add(pnlMain);
-
-        // =========================================================
-        // TÍNH NĂNG UX/UI MỚI: BÀN PHÍM
-        // =========================================================
         
-        // 1. Nhấn nút Enter ở bất kỳ đâu cũng tự động kích hoạt nút Tìm Kiếm
-        getRootPane().setDefaultButton(btnTimKiem);
+        JButton btnLamMoi = new JButton("Làm mới bộ lọc");
+        btnLamMoi.setBackground(Color.LIGHT_GRAY);
+        btnLamMoi.setFocusPainted(false);
 
-        // 2. Dùng mũi tên Lên/Xuống để chuyển đổi giữa các ô
-        setupArrowKeyNavigation(txtTenSach);
-        setupArrowKeyNavigation(txtGiaTu);
-        setupArrowKeyNavigation(txtGiaDen);
+        pnlButtons.add(btnTimKiem);
+        pnlButtons.add(btnLamMoi);
+        add(pnlButtons, BorderLayout.SOUTH);
 
-        // --- Sự kiện click chuột ---
-        btnTimKiem.addActionListener(e -> {
-            isConfirm = true;
-            dispose(); 
+        // --- XỬ LÝ SỰ KIỆN NÚT BẤM ---
+        btnLamMoi.addActionListener(e -> {
+            txtMa.setText(""); txtHo.setText(""); txtTen.setText("");
+            txtSDT.setText(""); txtEmail.setText("");
+            cboGioiTinh.setSelectedIndex(0); cboChucVu.setSelectedIndex(0);
+            txtTuNgay.setText(""); txtDenNgay.setText("");
         });
 
-        btnHuy.addActionListener(e -> {
-            isConfirm = false;
-            dispose(); 
-        });
+        btnTimKiem.addActionListener(e -> thucHienTimKiem());
     }
 
-    // Hàm hỗ trợ: Bắt sự kiện mũi tên Lên/Xuống để nhảy focus
-    private void setupArrowKeyNavigation(JTextField txt) {
-        txt.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    txt.transferFocus(); // Nhảy xuống ô tiếp theo
-                } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    txt.transferFocusBackward(); // Nhảy lên ô trước đó
-                }
+    private JPanel createGroupPanel(String title) {
+        JPanel pnl = new JPanel();
+        pnl.setBackground(Color.WHITE);
+        pnl.setBorder(BorderFactory.createTitledBorder(
+                new LineBorder(COLOR_PRIMARY, 1), title, 
+                TitledBorder.LEFT, TitledBorder.TOP, 
+                new Font("Segoe UI", Font.BOLD, 13), COLOR_PRIMARY
+        ));
+        return pnl;
+    }
+
+    private void thucHienTimKiem() {
+        Date tuNgay = null, denNgay = null;
+        try {
+            if (!txtTuNgay.getText().trim().isEmpty()) {
+                tuNgay = Date.valueOf(txtTuNgay.getText().trim());
             }
-        });
-    }
+            if (!txtDenNgay.getText().trim().isEmpty()) {
+                denNgay = Date.valueOf(txtDenNgay.getText().trim());
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi định dạng ngày! Vui lòng nhập yyyy-mm-dd.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-    private void addFormItem(JPanel parent, String label, JComponent input, Font fLabel, Font fInput) {
-        JLabel lbl = new JLabel(label);
-        lbl.setFont(fLabel);
-        input.setFont(fInput);
-        parent.add(lbl);
-        parent.add(input);
-    }
+        // Gọi hàm BUS đã tạo ở Bước 1
+        ArrayList<NhanVienDTO> ketQua = nvBUS.timKiemNangCao(
+            txtMa.getText().trim(),
+            txtHo.getText().trim(),
+            txtTen.getText().trim(),
+            txtSDT.getText().trim(),
+            txtEmail.getText().trim(),
+            cboGioiTinh.getSelectedItem().toString(),
+            cboChucVu.getSelectedItem().toString(),
+            tuNgay,
+            denNgay
+        );
 
-    private void loadComboBoxData() {
-        cboTacGia.addItem("Tất cả");
-        ArrayList<TacGiaDTO> listTG = new TacGiaDAO().selectAll();
-        for (TacGiaDTO tg : listTG) cboTacGia.addItem(tg.getMaTG() + " - " + tg.getHoTen());
+        if (ketQua.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên nào phù hợp!");
+        }
 
-        cboTheLoai.addItem("Tất cả");
-        ArrayList<TheLoaiDTO> listTL = new TheLoaiDAO().selectAll();
-        for (TheLoaiDTO tl : listTL) cboTheLoai.addItem(tl.getMaTL() + " - " + tl.getTenTL());
-    }
-
-    // --- Các hàm để bên ngoài lấy dữ liệu ---
-    public boolean isConfirm() { return isConfirm; }
-    public String getTenSach() { return txtTenSach.getText().trim(); }
-    public String getMaTG() {
-        if (cboTacGia.getSelectedIndex() == 0) return "Tất cả";
-        return cboTacGia.getSelectedItem().toString().split(" - ")[0]; 
-    }
-    public String getMaTL() {
-        if (cboTheLoai.getSelectedIndex() == 0) return "Tất cả";
-        return cboTheLoai.getSelectedItem().toString().split(" - ")[0];
-    }
-    public double getGiaTu() {
-        try { return Double.parseDouble(txtGiaTu.getText().trim()); } catch (Exception e) { return 0; }
-    }
-    public double getGiaDen() {
-        try { return Double.parseDouble(txtGiaDen.getText().trim()); } catch (Exception e) { return 0; }
+        // Truyền dữ liệu về Bảng ở Form chính
+        parentPanel.loadDataLenBang(ketQua);
+        
+        // Tắt dialog
+        this.dispose();
     }
 }
