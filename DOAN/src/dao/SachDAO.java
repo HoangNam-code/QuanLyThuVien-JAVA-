@@ -92,41 +92,43 @@ public class SachDAO {
         }
     }
 
-    // [Mục 9] Tìm kiếm nâng cao (Search Engine)
-    public ArrayList<SachDTO> selectByCondition(String ten, String maTL, String maTG, double minGia, double maxGia) {
-        ArrayList<SachDTO> list = new ArrayList<>();
-        try {
-            Connection conn = DBconnection.getConnection();
-            StringBuilder sql = new StringBuilder("SELECT * FROM SACH WHERE 1=1"); // 1=1 để dễ nối chuỗi AND
-            
-            if (!ten.isEmpty()) sql.append(" AND Ten_Sach LIKE ?");
-            if (maTL != null && !maTL.equals("Tất cả")) sql.append(" AND Ma_TL = ?");
-            if (maTG != null && !maTG.equals("Tất cả")) sql.append(" AND Ma_TG = ?");
-            if (maxGia > 0) sql.append(" AND Don_Gia BETWEEN ? AND ?");
+   // [Mục 9] Tìm kiếm nâng cao (Search Engine)
+   public ArrayList<SachDTO> selectByCondition(String maTL, String maTG, String maNXB, int namXB, double minGia, double maxGia) {
+    ArrayList<SachDTO> list = new ArrayList<>();
+    try {
+        Connection conn = DBconnection.getConnection();
+        StringBuilder sql = new StringBuilder("SELECT * FROM SACH WHERE 1=1"); 
+        
+        if (maTL != null && !maTL.isEmpty() && !maTL.equals("Tất cả")) sql.append(" AND Ma_TL = ?");
+        if (maTG != null && !maTG.isEmpty() && !maTG.equals("Tất cả")) sql.append(" AND Ma_TG = ?");
+        if (maNXB != null && !maNXB.isEmpty() && !maNXB.equals("Tất cả")) sql.append(" AND Ma_NXB = ?");
+        if (namXB > 0) sql.append(" AND Nam_XB = ?");
+        if (maxGia > 0) sql.append(" AND Don_Gia BETWEEN ? AND ?");
 
-            PreparedStatement ps = conn.prepareStatement(sql.toString());
-            
-            int index = 1;
-            if (!ten.isEmpty()) ps.setString(index++, "%" + ten + "%");
-            if (maTL != null && !maTL.equals("Tất cả")) ps.setString(index++, maTL);
-            if (maTG != null && !maTG.equals("Tất cả")) ps.setString(index++, maTG);
-            if (maxGia > 0) {
-                ps.setDouble(index++, minGia);
-                ps.setDouble(index++, maxGia);
-            }
+        PreparedStatement ps = conn.prepareStatement(sql.toString());
+        
+        int index = 1;
+        if (maTL != null && !maTL.isEmpty() && !maTL.equals("Tất cả")) ps.setString(index++, maTL);
+        if (maTG != null && !maTG.isEmpty() && !maTG.equals("Tất cả")) ps.setString(index++, maTG);
+        if (maNXB != null && !maNXB.isEmpty() && !maNXB.equals("Tất cả")) ps.setString(index++, maNXB);
+        if (namXB > 0) ps.setInt(index++, namXB);
+        if (maxGia > 0) {
+            ps.setDouble(index++, minGia);
+            ps.setDouble(index++, maxGia);
+        }
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new SachDTO(
-                    rs.getString("Ma_Sach"), rs.getString("Ten_Sach"),
-                    rs.getInt("Nam_XB"), rs.getString("Ma_TL"),
-                    rs.getDouble("Don_Gia"), rs.getInt("So_Luong"),
-                    rs.getString("Ma_TG"), rs.getString("Ma_NXB"), 
-                    rs.getInt("So_Trang")
-                ));
-            }
-            conn.close();
-        } catch (SQLException e) { e.printStackTrace(); }
-        return list;
-    }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new SachDTO(
+                rs.getString("Ma_Sach"), rs.getString("Ten_Sach"),
+                rs.getInt("Nam_XB"), rs.getString("Ma_TL"),
+                rs.getDouble("Don_Gia"), rs.getInt("So_Luong"),
+                rs.getString("Ma_TG"), rs.getString("Ma_NXB"), 
+                rs.getInt("So_Trang")
+            ));
+        }
+        conn.close();
+    } catch (SQLException e) { e.printStackTrace(); }
+    return list;
+}
 }

@@ -70,8 +70,8 @@ public class SachBUS {
         return ketQua;
     }
 
-    // --- [Mục 9] TÌM KIẾM NÂNG CAO BẰNG SQL ---
-    public ArrayList<SachDTO> timKiemNangCao(String ten, String maTL, String maTG, double min, double max) {
-        return sachDAO.selectByCondition(ten, maTL, maTG, min, max);
-    }
+   // --- [Mục 9] TÌM KIẾM NÂNG CAO BẰNG SQL ---
+   public ArrayList<SachDTO> timKiemNangCao(String maTL, String maTG, String maNXB, int namXB, double min, double max) {
+    return sachDAO.selectByCondition(maTL, maTG, maNXB, namXB, min, max);
+}
 }

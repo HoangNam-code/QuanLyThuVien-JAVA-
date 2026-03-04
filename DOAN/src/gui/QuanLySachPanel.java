@@ -76,7 +76,7 @@ public class QuanLySachPanel extends JPanel {
         
         pnlCenter.add(pnlSearch, BorderLayout.NORTH);
 
-        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
+        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "Mã_NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
         model = new DefaultTableModel(cols, 0);
         tblSach = new JTable(model);
         tblSach.setRowHeight(30);
@@ -129,7 +129,7 @@ public class QuanLySachPanel extends JPanel {
         JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         pnlBtn.setBackground(Color.WHITE);
         
-        btnThem = createButton("Thêm", "them.png", new Color(46, 204, 113));
+        btnThem = createButton("Thêm", "add.png", new Color(46, 204, 113));
         btnSua = createButton("Sửa", "sua.png", new Color(241, 196, 15));
         btnXoa = createButton("Xóa", "xoa.png", new Color(231, 76, 60));
         btnLamMoi = createButton("Làm mới", "lammoi.png", new Color(149, 165, 166));
