@@ -107,12 +107,12 @@ public class TimKiemNangCaoSachDialog extends JDialog {
 
         JButton btnTimKiem = new JButton("Tìm kiếm ngay");
         btnTimKiem.setBackground(COLOR_WARNING);
-        btnTimKiem.setForeground(Color.WHITE);
+        btnTimKiem.setForeground(Color.blue);
         btnTimKiem.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnTimKiem.setFocusPainted(false);
 
         JButton btnLamMoi = new JButton("Làm mới bộ lọc");
-        btnLamMoi.setBackground(Color.LIGHT_GRAY);
+        btnLamMoi.setBackground(Color.blue);
         btnLamMoi.setFocusPainted(false);
 
         pnlButtons.add(btnTimKiem);

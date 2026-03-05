@@ -29,7 +29,8 @@ public class QuanLySachPanel extends JPanel {
     private JComboBox<String> cboTacGia, cboTheLoai, cboNXB;
     
     // Khai báo các nút chức năng
-    private JButton btnThem, btnSua, btnXoa, btnLamMoi, btnTimKiemNC;
+    private JButton btnThem, btnSua, btnXoa, btnLamMoi;
+    private JButton btnTimKiemNC, btnHuyTim; 
     private JButton btnNhapExcel, btnXuatExcel;
 
     public QuanLySachPanel() {
@@ -74,9 +75,19 @@ public class QuanLySachPanel extends JPanel {
         btnTimKiemNC.setBorderPainted(false);
         pnlSearch.add(btnTimKiemNC);
         
+        // --- THÊM NÚT HỦY TÌM KIẾM ---
+        btnHuyTim = new JButton("Hủy");
+        btnHuyTim.setBackground(new Color(149, 165, 166)); // Màu xám
+        btnHuyTim.setForeground(Color.WHITE);
+        btnHuyTim.setFocusPainted(false);
+        btnHuyTim.setOpaque(true);
+        btnHuyTim.setBorderPainted(false);
+        pnlSearch.add(btnHuyTim);
+        // ------------------------------
+        
         pnlCenter.add(pnlSearch, BorderLayout.NORTH);
 
-        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "Mã_NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
+        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "Mã NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
         model = new DefaultTableModel(cols, 0);
         tblSach = new JTable(model);
         tblSach.setRowHeight(30);
@@ -129,7 +140,7 @@ public class QuanLySachPanel extends JPanel {
         JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         pnlBtn.setBackground(Color.WHITE);
         
-        btnThem = createButton("Thêm", "add.png", new Color(46, 204, 113));
+        btnThem = createButton("Thêm", "them.png", new Color(46, 204, 113));
         btnSua = createButton("Sửa", "sua.png", new Color(241, 196, 15));
         btnXoa = createButton("Xóa", "xoa.png", new Color(231, 76, 60));
         btnLamMoi = createButton("Làm mới", "lammoi.png", new Color(149, 165, 166));
@@ -151,6 +162,7 @@ public class QuanLySachPanel extends JPanel {
         btnNhapExcel.addActionListener(e -> xuLyNhapExcel());
         btnXuatExcel.addActionListener(e -> xuLyXuatExcel());
 
+        // Sự kiện gõ tìm kiếm nhanh
         txtTimKiem.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 ArrayList<SachDTO> list = sachBUS.timKiemTrenRAM(txtTimKiem.getText());
@@ -158,12 +170,18 @@ public class QuanLySachPanel extends JPanel {
             }
         });
         
+        // Sự kiện mở Form tìm kiếm nâng cao
         btnTimKiemNC.addActionListener(e -> {
-            // Mở cửa sổ Tìm kiếm nâng cao dành riêng cho Sách
-            // Truyền this (Panel hiện tại) và sachBUS sang Dialog giống như bên Nhân Viên
             TimKiemNangCaoSachDialog dialog = new TimKiemNangCaoSachDialog(this, sachBUS);
             dialog.setVisible(true); 
         });
+        
+        // --- SỰ KIỆN NÚT HỦY TÌM KIẾM ---
+        btnHuyTim.addActionListener(e -> {
+            txtTimKiem.setText(""); // Xóa trắng chữ trong ô tìm kiếm
+            loadDataLenBang(sachBUS.getList()); // Tải lại toàn bộ danh sách gốc
+        });
+        // ---------------------------------
     }
 
     // =========================================================================
