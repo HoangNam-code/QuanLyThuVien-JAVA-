@@ -4,19 +4,20 @@ import bus.DocGiaBUS;
 import dto.DocGiaDTO;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.sql.Date;
 import java.util.ArrayList;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import util.ExcelHelper;
-import java.io.File;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-public class QuanLyDocGiaPanel extends JPanel {
+// BƯỚC 1: Đổi extends JPanel thành BackgroundPanel
+public class QuanLyDocGiaPanel extends BackgroundPanel {
 
     private DocGiaBUS dgBUS = new DocGiaBUS();
     private JTable tblDocGia;
@@ -43,15 +44,18 @@ public class QuanLyDocGiaPanel extends JPanel {
     }
 
     private void initComponents() {
+        // BƯỚC 2: TẠO KHE HỞ ĐỂ LỘ ẢNH NỀN VÀ LÀM TRONG SUỐT PANEL GỐC
         setLayout(new BorderLayout(15, 15));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15)); 
-        setBackground(Color.WHITE);
+        setOpaque(false); // Xóa nền xám để lộ ảnh
+        setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20)); 
 
         // =========================================================
-        // 1. PANEL PHÍA TRÊN (TIÊU ĐỀ + FORM NHẬP LIỆU + NÚT BẤM)
+        // 1. PANEL PHÍA TRÊN (KHỐI TRẮNG BÓC SỐ 1)
         // =========================================================
         JPanel pnlTop = new JPanel(new BorderLayout(0, 15));
         pnlTop.setBackground(Color.WHITE);
+        pnlTop.setOpaque(true); // Ép khối này phải là màu trắng đặc
+        pnlTop.setBorder(new EmptyBorder(15, 20, 15, 20)); // Tạo lề bên trong khối trắng cho chữ đỡ sát viền
 
         // Tiêu đề
         JLabel lblTitle = new JLabel("QUẢN LÝ ĐỘC GIẢ");
@@ -71,7 +75,7 @@ public class QuanLyDocGiaPanel extends JPanel {
 
         Font fontInput = new Font("Segoe UI", Font.PLAIN, 14);
         txtMa = createTextField(fontInput); txtHoDem = createTextField(fontInput); txtTen = createTextField(fontInput);
-        cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"}); cboGioiTinh.setFont(fontInput);
+        cboGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"}); cboGioiTinh.setFont(fontInput); cboGioiTinh.setBackground(Color.WHITE);
         txtNgaySinh = createTextField(fontInput); txtSDT = createTextField(fontInput);
         txtEmail = createTextField(fontInput); txtDiaChi = createTextField(fontInput);
         txtPhiTV = createTextField(fontInput); txtLoaiTV = createTextField(fontInput);
@@ -117,12 +121,14 @@ public class QuanLyDocGiaPanel extends JPanel {
         pnlTop.add(pnlFormAndButtons, BorderLayout.CENTER);
 
         // =========================================================
-        // 2. KHU VỰC TÌM KIẾM & BẢNG DỮ LIỆU
+        // 2. KHU VỰC TÌM KIẾM & BẢNG DỮ LIỆU (KHỐI TRẮNG BÓC SỐ 2)
         // =========================================================
         JPanel pnlCenter = new JPanel(new BorderLayout(0, 10));
         pnlCenter.setBackground(Color.WHITE);
+        pnlCenter.setOpaque(true); // Ép khối này màu trắng đặc
+        pnlCenter.setBorder(new EmptyBorder(15, 20, 15, 20)); // Tạo lề bên trong
 
-        // Thanh Tìm Kiếm (Đã được thu gọn)
+        // Thanh Tìm Kiếm 
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         pnlSearch.setBackground(Color.WHITE);
         pnlSearch.setBorder(BorderFactory.createTitledBorder(
@@ -194,6 +200,7 @@ public class QuanLyDocGiaPanel extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(tblDocGia);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        scrollPane.getViewport().setBackground(Color.WHITE); // Đảm bảo nền bảng màu trắng
 
         pnlCenter.add(scrollPane, BorderLayout.CENTER);
 
@@ -240,7 +247,7 @@ public class QuanLyDocGiaPanel extends JPanel {
             loadTable(dgBUS.getList()); 
         });
 
-        // Nút Thêm, Sửa, Xóa, Làm Mới... (Giữ nguyên như cũ)
+        // Nút Thêm, Sửa, Xóa, Làm Mới...
         btnThem.addActionListener(e -> {
             try {
                 DocGiaDTO dg = new DocGiaDTO(
@@ -366,7 +373,6 @@ public class QuanLyDocGiaPanel extends JPanel {
     // HÀM HIỂN THỊ HỘP THOẠI TÌM KIẾM NÂNG CAO (POPUP FORM)
     // =========================================================
     private void showAdvancedSearchDialog() {
-        // Lấy cửa sổ chính đang chứa Panel này để làm cha cho Dialog
         Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
         JDialog dialog = new JDialog(parentFrame, "Tìm kiếm nâng cao", true);
         dialog.setSize(450, 250);
@@ -379,10 +385,9 @@ public class QuanLyDocGiaPanel extends JPanel {
         pnlForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         Font fontForm = new Font("Segoe UI", Font.PLAIN, 14);
 
-        // Trường nhập liệu trên Dialog
         pnlForm.add(createLabel("Từ khóa (Mã/Tên/SĐT):"));
         JTextField txtAdvTimKiem = createTextField(fontForm);
-        txtAdvTimKiem.setText(txtTimKiem.getText()); // Kế thừa từ khóa đang gõ ở ngoài (nếu có)
+        txtAdvTimKiem.setText(txtTimKiem.getText()); 
         pnlForm.add(txtAdvTimKiem);
 
         pnlForm.add(createLabel("Giới tính:"));
@@ -394,7 +399,6 @@ public class QuanLyDocGiaPanel extends JPanel {
         JTextField txtAdvLoaiTV = createTextField(fontForm);
         pnlForm.add(txtAdvLoaiTV);
 
-        // Nút chức năng trên Dialog
         JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         pnlButtons.setBackground(Color.WHITE);
         
@@ -407,27 +411,21 @@ public class QuanLyDocGiaPanel extends JPanel {
         pnlButtons.add(btnSearch);
         pnlButtons.add(btnCancel);
 
-        // Sự kiện khi bấm "Tìm kiếm" trong Form nâng cao
         btnSearch.addActionListener(e -> {
             String tuKhoa = txtAdvTimKiem.getText().trim();
             String gioiTinh = cboAdvGioiTinh.getSelectedItem().toString();
             String loaiTV = txtAdvLoaiTV.getText().trim();
             
-            // Cập nhật lại thanh tìm kiếm bên ngoài cho đồng bộ giao diện
             txtTimKiem.setText(tuKhoa);
-            
-            // Gọi phương thức lọc từ BUS và tải lên bảng
             loadTable(dgBUS.timKiemNangCao(tuKhoa, gioiTinh, loaiTV));
-            
-            dialog.dispose(); // Tắt hộp thoại
+            dialog.dispose(); 
         });
 
-        // Sự kiện Hủy bỏ
         btnCancel.addActionListener(e -> dialog.dispose());
 
         dialog.add(pnlForm, BorderLayout.CENTER);
         dialog.add(pnlButtons, BorderLayout.SOUTH);
-        dialog.setVisible(true); // Hiển thị Dialog
+        dialog.setVisible(true); 
     }
     
     // --- CÁC HÀM HỖ TRỢ GIAO DIỆN ---
@@ -471,6 +469,7 @@ public class QuanLyDocGiaPanel extends JPanel {
 
     private void loadTable(ArrayList<DocGiaDTO> list) {
         model.setRowCount(0);
+        if(list == null) return;
         for (DocGiaDTO d : list) {
             model.addRow(new Object[]{
                 d.getMaDG(), d.getHoDem(), d.getTen(), d.getGioiTinh(), d.getNgaySinh(), 
