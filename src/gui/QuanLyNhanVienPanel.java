@@ -17,7 +17,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import util.ExcelHelper;
 
-public class QuanLyNhanVienPanel extends JPanel {
+// Đổi kế thừa JPanel thành BackgroundPanel
+public class QuanLyNhanVienPanel extends BackgroundPanel {
 
     private NhanVienBUS nvBUS = new NhanVienBUS();
     private bus.TaiKhoanBUS tkBUS = new bus.TaiKhoanBUS();
@@ -47,12 +48,14 @@ public class QuanLyNhanVienPanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(0, 0));
-        setBackground(Color.WHITE);
+        // TẠO KHE HỞ ĐỂ LỘ ẢNH NỀN & LÀM TRONG SUỐT PANEL GỐC
+        setLayout(new BorderLayout(15, 15));
+        setOpaque(false);
+        setBorder(new EmptyBorder(15, 20, 15, 20));
 
         JPanel pnlTop = new JPanel();
         pnlTop.setLayout(new BoxLayout(pnlTop, BoxLayout.Y_AXIS));
-        pnlTop.setBackground(Color.WHITE);
+        pnlTop.setBackground(Color.WHITE); // Khối nền trắng bóc
         pnlTop.setBorder(new EmptyBorder(10, 20, 10, 20));
 
         JLabel lblTitle = new JLabel("QUẢN LÝ NHÂN VIÊN");
@@ -155,7 +158,7 @@ public class QuanLyNhanVienPanel extends JPanel {
         add(pnlTop, BorderLayout.NORTH);
 
         JPanel pnlCenter = new JPanel(new BorderLayout());
-        pnlCenter.setBackground(Color.WHITE);
+        pnlCenter.setBackground(Color.WHITE); // Khối nền trắng bóc
         pnlCenter.setBorder(new EmptyBorder(10, 20, 20, 20));
 
         String[] cols = {"Mã NV", "Họ đệm", "Tên", "Giới tính", "Ngày sinh", "Email", "SĐT", "Chức vụ", "Tài khoản"};
@@ -227,17 +230,13 @@ public class QuanLyNhanVienPanel extends JPanel {
         if (list == null) return;
         model.setRowCount(0);
         for (NhanVienDTO nv : list) {
-            // Lấy trạng thái lưu dưới XAMPP
             String trangThaiDB = nv.getTrangThaiTaiKhoan();
             String hienThi = "Chưa có";
-            
-            // Quy đổi sang Tiếng Việt để hiện lên bảng
             if ("1".equals(trangThaiDB)) {
                 hienThi = "Đã có";
             } else if ("0".equals(trangThaiDB)) {
                 hienThi = "Bị khoá";
             }
-
             model.addRow(new Object[]{
                 nv.getMaNV(), nv.getHoDem(), nv.getTen(), nv.getGioiTinh(), nv.getNgaySinh(),
                 nv.getEmail(), nv.getSdt(), nv.getChucVu(), hienThi 
@@ -284,13 +283,13 @@ public class QuanLyNhanVienPanel extends JPanel {
                 if (msg.contains("thành công")) {
                     nvBUS.docDanhSach(); 
                     loadDataLenBang(nvBUS.getList());
-                    lamMoiForm(); // Clear form sau khi sửa
+                    lamMoiForm(); 
                 }
             }
         });
 
         btnXoa.addActionListener(e -> {
-            String maNV = txtMa.getText().trim(); // Lấy chính xác mã không có khoảng trắng
+            String maNV = txtMa.getText().trim(); 
             if (!maNV.isEmpty()) {
                 if (JOptionPane.showConfirmDialog(this, "Xóa nhân viên " + maNV + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     String msg = nvBUS.xoaNhanVien(maNV);
@@ -318,26 +317,6 @@ public class QuanLyNhanVienPanel extends JPanel {
                     ExcelHelper.exportExcel(tblNhanVien, path);
                 } catch (Exception ex) { 
                     JOptionPane.showMessageDialog(this, "Lỗi xuất file: " + ex.getMessage()); 
-                }
-            }
-        });
-
-        btnNhapExcel.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx"));
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    File file = chooser.getSelectedFile();
-                    ArrayList<NhanVienDTO> listImport = ExcelHelper.importNhanVien(file.getAbsolutePath());
-                    int count = 0;
-                    for (NhanVienDTO nv : listImport) {
-                        if (nvBUS.themNhanVien(nv).contains("thành công")) count++;
-                    }
-                    JOptionPane.showMessageDialog(this, "Đã xử lý nhập: " + count + " nhân viên mới!");
-                    nvBUS.docDanhSach();
-                    loadDataLenBang(nvBUS.getList());
-                } catch (Exception ex) { 
-                    JOptionPane.showMessageDialog(this, "Lỗi nhập file: " + ex.getMessage()); 
                 }
             }
         });
@@ -402,19 +381,19 @@ public class QuanLyNhanVienPanel extends JPanel {
             int row = tblNhanVien.getSelectedRow();
             if (row < 0) return;
             String maNV = getValue(row, 0);
-            String trangThai = getValue(row, 8); // Chữ "Đã có" hoặc "Bị khoá"
+            String trangThai = getValue(row, 8); 
 
             if (trangThai.equals("Chưa có")) return;
 
             if (trangThai.equals("Bị khoá")) {
                 if(JOptionPane.showConfirmDialog(this, "Tài khoản đang bị khóa. Bạn muốn MỞ KHÓA không?", "Mở khóa", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(this, tkBUS.thayDoiTrangThai(maNV, "1")); // Gửi "1" xuống XAMPP
+                    JOptionPane.showMessageDialog(this, tkBUS.thayDoiTrangThai(maNV, "1")); 
                     nvBUS.docDanhSach();
                     loadDataLenBang(nvBUS.getList());
                 }
             } else {
                 if(JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn KHÓA tài khoản của NV: " + maNV + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(this, tkBUS.thayDoiTrangThai(maNV, "0")); // Gửi "0" xuống XAMPP
+                    JOptionPane.showMessageDialog(this, tkBUS.thayDoiTrangThai(maNV, "0")); 
                     nvBUS.docDanhSach();
                     loadDataLenBang(nvBUS.getList());
                 }
@@ -430,7 +409,7 @@ public class QuanLyNhanVienPanel extends JPanel {
         try {
             Date ngaySinh = Date.valueOf(txtNgaySinh.getText().trim()); 
             return new NhanVienDTO(
-                txtMa.getText().trim(),    // <-- Ép Trim()
+                txtMa.getText().trim(),    
                 txtHo.getText().trim(), 
                 txtTen.getText().trim(), 
                 ngaySinh,
@@ -491,7 +470,6 @@ public class QuanLyNhanVienPanel extends JPanel {
                 return;
             }
 
-            // SET TRẠNG THÁI LÀ "1" (ĐÃ CÓ) ĐỂ LƯU XUỐNG XAMPP
             TaiKhoanDTO tkMoi = new TaiKhoanDTO();
             tkMoi.setTenDangNhap(u);
             tkMoi.setMatKhau(p);
