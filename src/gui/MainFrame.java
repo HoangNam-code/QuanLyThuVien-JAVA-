@@ -137,7 +137,7 @@ public class MainFrame extends JFrame {
         pnlContent.setBackground(Color.WHITE);
 
         // Add các Panel THẬT vào hệ thống
-        pnlContent.add(createDummyPanel("TRANG CHỦ", Color.WHITE), "HOME");
+        pnlContent.add(new TrangChuPanel(taiKhoan), "HOME");
         
         // Đã liên kết Panel Sách và Độc Giả
         pnlContent.add(new QuanLySachPanel(), "SACH"); 
