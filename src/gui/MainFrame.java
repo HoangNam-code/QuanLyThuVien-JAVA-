@@ -93,7 +93,7 @@ public class MainFrame extends JFrame {
         
         // Đường kẻ phân cách
         JSeparator sep = new JSeparator();
-        sep.setForeground(new Color(255, 255, 255, 80));
+        sep.setForeground(new Color(255, 255, 255, 100)); // Màu trắng trong suốt
         pnlTop.add(sep);
 
         // --- PHẦN GIỮA: DANH SÁCH MENU ---
@@ -155,15 +155,14 @@ public class MainFrame extends JFrame {
     // --- HÀM TẠO NÚT MENU ---
     private void taoNutMenu(JPanel panel, String title, String cardName, String iconName) {
         JButton btn = createMenuButton(title, iconName);
-        // Hack: Ép nút dãn hết chiều ngang của panel cha (250px)
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); 
         
         btn.addActionListener(e -> {
             resetButtonColor();
+            // Highlight nút được chọn
             btn.setBackground(COLOR_HOVER); 
-            // Hiệu ứng viền trái
             btn.setBorder(BorderFactory.createCompoundBorder(
-                new MatteBorder(0, 5, 0, 0, Color.WHITE), 
+                new MatteBorder(0, 5, 0, 0, Color.WHITE), // Vạch trắng bên trái
                 new EmptyBorder(10, 15, 10, 10) 
             ));
             cardLayout.show(pnlContent, cardName);
@@ -175,13 +174,33 @@ public class MainFrame extends JFrame {
     private JButton createMenuButton(String text, String iconName) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setForeground(COLOR_TEXT);
-        btn.setBackground(COLOR_MAIN);
-        btn.setBorder(new EmptyBorder(10, 20, 10, 10)); // Padding mặc định
-        btn.setFocusPainted(false);
+        btn.setForeground(COLOR_TEXT); // Màu trắng
+        btn.setBackground(COLOR_MAIN); // Màu xanh SGU
+
+        // --- CẤU HÌNH ĐỂ HIỆN MÀU RÕ NÉT ---
+        btn.setContentAreaFilled(false); // Quan trọng: Tắt lớp phủ mặc định
+        btn.setOpaque(true);             // Quan trọng: Cho phép hiện màu nền tùy chỉnh
+        btn.setFocusPainted(false);      // Xóa khung viền khi click
+        btn.setBorder(new EmptyBorder(10, 20, 10, 10));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setHorizontalAlignment(SwingConstants.LEFT); // Căn trái nội dung
-        
+
+        // Thêm hiệu ứng Hover (di chuột vào thì sáng lên)
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                // Nếu nút không phải nút đang được chọn thì mới đổi màu hover nhẹ
+                if (!(btn.getBorder() instanceof MatteBorder)) {
+                    btn.setBackground(new Color(40, 130, 220)); 
+                }
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                if (!(btn.getBorder() instanceof MatteBorder)) {
+                    btn.setBackground(COLOR_MAIN);
+                }
+            }
+        });
+
+        // (Giữ nguyên phần nạp Icon bên dưới của bạn...)
         if (iconName != null) {
             try {
                 URL resource = getClass().getResource("/img/" + iconName);
@@ -198,8 +217,8 @@ public class MainFrame extends JFrame {
 
     private void resetButtonColor() {
         for (JButton btn : listButtons) {
-            btn.setBackground(COLOR_MAIN);
-            btn.setBorder(new EmptyBorder(10, 20, 10, 10)); // Trả về không viền
+            btn.setBackground(COLOR_MAIN); // Trả về màu xanh SGU
+            btn.setBorder(new EmptyBorder(10, 20, 10, 10)); 
         }
     }
 

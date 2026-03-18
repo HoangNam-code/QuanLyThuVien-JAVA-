@@ -12,6 +12,7 @@ public class DocGiaDTO {
     private String sdt;
     private String diaChi;
     private int soSachMuon;
+    private Date ngayDangKy;
     private Date ngayHetHan;
     private double tienPhiThanhVien;
     private String maLoaiTV;
@@ -19,7 +20,7 @@ public class DocGiaDTO {
     public DocGiaDTO() {}
 
     // Constructor đầy đủ để lấy dữ liệu từ DB lên
-    public DocGiaDTO(String maDG, String hoDem, String ten, String gioiTinh, Date ngaySinh, String email, String sdt, String diaChi, int soSachMuon, Date ngayHetHan, double tienPhiThanhVien, String maLoaiTV) {
+    public DocGiaDTO(String maDG, String hoDem, String ten, String gioiTinh, Date ngaySinh, String email, String sdt, String diaChi, int soSachMuon, Date ngayDangKy, Date ngayHetHan, double tienPhiThanhVien, String maLoaiTV) {
         this.maDG = maDG;
         this.hoDem = hoDem;
         this.ten = ten;
@@ -29,6 +30,7 @@ public class DocGiaDTO {
         this.sdt = sdt;
         this.diaChi = diaChi;
         this.soSachMuon = soSachMuon;
+        this.ngayDangKy = ngayDangKy;
         this.ngayHetHan = ngayHetHan;
         this.tienPhiThanhVien = tienPhiThanhVien;
         this.maLoaiTV = maLoaiTV;
@@ -53,6 +55,8 @@ public class DocGiaDTO {
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public int getSoSachMuon() { return soSachMuon; }
     public void setSoSachMuon(int soSachMuon) { this.soSachMuon = soSachMuon; }
+    public Date getNgayDangKy() { return ngayDangKy; }
+    public void setNgayDangKy(Date ngayDangKy) { this.ngayDangKy = ngayDangKy; }
     public Date getNgayHetHan() { return ngayHetHan; }
     public void setNgayHetHan(Date ngayHetHan) { this.ngayHetHan = ngayHetHan; }
     public double getTienPhiThanhVien() { return tienPhiThanhVien; }
