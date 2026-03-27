@@ -11,13 +11,12 @@ import dto.TheLoaiDTO;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import util.Formatter;
 
 public class QuanLySachPanel extends JPanel {
 
@@ -25,16 +24,13 @@ public class QuanLySachPanel extends JPanel {
     private JTable tblSach;
     private DefaultTableModel model;
 
-    // Các ô nhập liệu
     private JTextField txtMa, txtTen, txtNamXB, txtSoLuong, txtDonGia, txtSoTrang, txtTimKiem;
     private JComboBox<String> cboTacGia, cboTheLoai, cboNXB;
     
     // Khai báo các nút chức năng
-    private JButton btnThem, btnSua, btnXoa, btnLamMoi, btnTimKiemNC;
+    private JButton btnThem, btnSua, btnXoa, btnLamMoi;
+    private JButton btnTimKiemNC, btnHuyTim; 
     private JButton btnNhapExcel, btnXuatExcel;
-    
-    // Format tiền tệ chuẩn VNĐ
-    private DecimalFormat df = new DecimalFormat("#,###");
 
     public QuanLySachPanel() {
         initComponents();
@@ -78,25 +74,26 @@ public class QuanLySachPanel extends JPanel {
         btnTimKiemNC.setBorderPainted(false);
         pnlSearch.add(btnTimKiemNC);
         
+        // --- THÊM NÚT HỦY TÌM KIẾM ---
+        btnHuyTim = new JButton("Hủy tìm");
+        btnHuyTim.setBackground(new Color(231, 76, 60));
+        btnHuyTim.setForeground(Color.WHITE);
+        btnHuyTim.setFocusPainted(false);
+        btnHuyTim.setOpaque(true);
+        btnHuyTim.setBorderPainted(false);
+        pnlSearch.add(btnHuyTim);
+        // ------------------------------
+        
         pnlCenter.add(pnlSearch, BorderLayout.NORTH);
 
-        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "Mã_NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
-        
-        // CHỐNG CHỈNH SỬA TRỰC TIẾP TRÊN BẢNG
-        model = new DefaultTableModel(cols, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; 
-            }
-        };
-        
+        String[] cols = {"Mã Sách", "Tên Sách", "Tác Giả", "Thể Loại", "NXB", "Năm XB", "Trang", "Số Lượng", "Đơn Giá"};
+        model = new DefaultTableModel(cols, 0);
         tblSach = new JTable(model);
         tblSach.setRowHeight(30);
         tblSach.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tblSach.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tblSach.getTableHeader().setBackground(new Color(240, 240, 240));
         
-        // Sự kiện click và gõ phím trên bảng
         tblSach.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) { fillForm(); }
         });
@@ -137,12 +134,11 @@ public class QuanLySachPanel extends JPanel {
         pnlInput.add(createFormItem("Năm XB:", txtNamXB));
         pnlInput.add(createFormItem("Số Trang:", txtSoTrang));
 
-        // Các nút chức năng
         JPanel pnlBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         pnlBtn.setBackground(Color.WHITE);
         
         btnThem = createButton("Thêm", "add.png", new Color(46, 204, 113));
-        btnSua = createButton("Sửa", "sua.png", new Color(241, 196, 15));
+        btnSua = createButton("Cập nhật", "sua.png", new Color(241, 196, 15));
         btnXoa = createButton("Xóa", "xoa.png", new Color(231, 76, 60));
         btnLamMoi = createButton("Làm mới", "lammoi.png", new Color(149, 165, 166));
         btnNhapExcel = createButton("Nhập Excel", "import.png", new Color(39, 174, 96));
@@ -155,7 +151,6 @@ public class QuanLySachPanel extends JPanel {
         pnlSouth.add(pnlBtn, BorderLayout.SOUTH);
         add(pnlSouth, BorderLayout.SOUTH);
 
-        // --- SỰ KIỆN NÚT BẤM ---
         btnThem.addActionListener(e -> xuLyThem());
         btnSua.addActionListener(e -> xuLySua());
         btnXoa.addActionListener(e -> xuLyXoa());
@@ -174,12 +169,15 @@ public class QuanLySachPanel extends JPanel {
             TimKiemNangCaoSachDialog dialog = new TimKiemNangCaoSachDialog(this, sachBUS);
             dialog.setVisible(true); 
         });
+        
+        // --- SỰ KIỆN NÚT HỦY TÌM KIẾM ---
+        btnHuyTim.addActionListener(e -> {
+            txtTimKiem.setText(""); 
+            loadDataLenBang(sachBUS.getList()); 
+        });
+        // ---------------------------------
     }
 
-    // =========================================================================
-    // CÁC HÀM HỖ TRỢ VẼ GIAO DIỆN (UI HELPERS)
-    // =========================================================================
-    
     private JPanel createFormItem(String labelText, JComponent comp) {
         JPanel panel = new JPanel(new BorderLayout(10, 0)); 
         panel.setBackground(Color.WHITE);
@@ -227,31 +225,22 @@ public class QuanLySachPanel extends JPanel {
 
     private void loadDuLieuLenComboBox() {
         ArrayList<TacGiaDTO> listTG = new TacGiaDAO().selectAll();
-        if (listTG != null) {
-            for (TacGiaDTO tg : listTG) cboTacGia.addItem(tg.getMaTG() + " - " + tg.getHoTen());
-        }
+        for (TacGiaDTO tg : listTG) cboTacGia.addItem(tg.getMaTG() + " - " + tg.getHoTen());
         
         ArrayList<TheLoaiDTO> listTL = new TheLoaiDAO().selectAll();
-        if (listTL != null) {
-            for (TheLoaiDTO tl : listTL) cboTheLoai.addItem(tl.getMaTL() + " - " + tl.getTenTL());
-        }
+        for (TheLoaiDTO tl : listTL) cboTheLoai.addItem(tl.getMaTL() + " - " + tl.getTenTL());
         
         ArrayList<NhaXuatBanDTO> listNXB = new NhaXuatBanDAO().selectAll();
-        if (listNXB != null) {
-            for (NhaXuatBanDTO nxb : listNXB) cboNXB.addItem(nxb.getMaNXB() + " - " + nxb.getTenNXB());
-        }
+        for (NhaXuatBanDTO nxb : listNXB) cboNXB.addItem(nxb.getMaNXB() + " - " + nxb.getTenNXB());
     }
 
     public void loadDataLenBang(ArrayList<SachDTO> list) {
         model.setRowCount(0);
         for (SachDTO s : list) {
-            // Sử dụng DecimalFormat chuẩn của Java thay vì util.Formatter
-            String giaVND = df.format(s.getDonGia()) + " VNĐ";
-            
             model.addRow(new Object[]{
                 s.getMaSach(), s.getTenSach(), s.getMaTG(), s.getMaTL(),
                 s.getMaNXB(), s.getNamXB(), s.getSoTrang(), s.getSoLuong(), 
-                giaVND 
+                Formatter.FormatVND(s.getDonGia()) 
             });
         }
     }
@@ -270,10 +259,8 @@ public class QuanLySachPanel extends JPanel {
             txtSoTrang.setText(model.getValueAt(row, 6).toString());
             txtSoLuong.setText(model.getValueAt(row, 7).toString());
             
-            // XỬ LÝ LỖI NGẦM: Lấy đúng phần số của giá tiền, bỏ hết các ký tự chữ, phẩy, chấm
-            String gia = model.getValueAt(row, 8).toString().replaceAll("[^0-9]", "");
+            String gia = model.getValueAt(row, 8).toString().replace(" VNĐ", "").replace(",", "");
             txtDonGia.setText(gia);
-            
             txtMa.setEditable(false);
         }
     }
@@ -288,17 +275,13 @@ public class QuanLySachPanel extends JPanel {
     }
 
     private SachDTO layThongTinForm() throws Exception {
-        if (cboTacGia.getSelectedItem() == null || cboTheLoai.getSelectedItem() == null || cboNXB.getSelectedItem() == null) {
-            throw new Exception("Vui lòng thêm dữ liệu Thể loại, Tác giả và NXB vào hệ thống trước!");
-        }
-        
         SachDTO s = new SachDTO();
-        s.setMaSach(txtMa.getText().trim());
-        s.setTenSach(txtTen.getText().trim());
-        s.setNamXB(Integer.parseInt(txtNamXB.getText().trim()));
-        s.setSoLuong(Integer.parseInt(txtSoLuong.getText().trim()));
-        s.setDonGia(Double.parseDouble(txtDonGia.getText().trim()));
-        s.setSoTrang(Integer.parseInt(txtSoTrang.getText().trim()));
+        s.setMaSach(txtMa.getText());
+        s.setTenSach(txtTen.getText());
+        s.setNamXB(Integer.parseInt(txtNamXB.getText()));
+        s.setSoLuong(Integer.parseInt(txtSoLuong.getText()));
+        s.setDonGia(Double.parseDouble(txtDonGia.getText()));
+        s.setSoTrang(Integer.parseInt(txtSoTrang.getText()));
         
         s.setMaTG(cboTacGia.getSelectedItem().toString().split(" - ")[0]);
         s.setMaTL(cboTheLoai.getSelectedItem().toString().split(" - ")[0]);
@@ -309,42 +292,27 @@ public class QuanLySachPanel extends JPanel {
     private void xuLyThem() {
         try {
             SachDTO s = layThongTinForm();
-            String msg = sachBUS.themSach(s);
-            JOptionPane.showMessageDialog(this, msg);
-            // SỬA LỖI LOGIC: Chỉ làm mới khi thành công
-            if (msg.contains("thành công")) {
-                loadDataLenBang(sachBUS.getList());
-                lamMoi();
-            }
-        } catch (Exception e) { 
-            JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại số liệu nhập! (Không để trống và nhập đúng định dạng số)", "Lỗi", JOptionPane.ERROR_MESSAGE); 
-        }
+            JOptionPane.showMessageDialog(this, sachBUS.themSach(s));
+            loadDataLenBang(sachBUS.getList());
+            lamMoi();
+        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại số liệu nhập!"); }
     }
 
     private void xuLySua() {
         try {
             SachDTO s = layThongTinForm();
-            String msg = sachBUS.suaSach(s);
-            JOptionPane.showMessageDialog(this, msg);
-            if (msg.contains("thành công")) {
-                loadDataLenBang(sachBUS.getList());
-                lamMoi();
-            }
-        } catch (Exception e) { 
-            JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại số liệu nhập!", "Lỗi", JOptionPane.ERROR_MESSAGE); 
-        }
+            JOptionPane.showMessageDialog(this, sachBUS.suaSach(s));
+            loadDataLenBang(sachBUS.getList());
+        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra lại số liệu nhập!"); }
     }
 
     private void xuLyXoa() {
         String ma = txtMa.getText();
         if (ma.isEmpty()) return;
         if (JOptionPane.showConfirmDialog(this, "Xóa sách " + ma + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            String msg = sachBUS.xoaSach(ma);
-            JOptionPane.showMessageDialog(this, msg);
-            if (msg.contains("thành công")) {
-                loadDataLenBang(sachBUS.getList());
-                lamMoi();
-            }
+            JOptionPane.showMessageDialog(this, sachBUS.xoaSach(ma));
+            loadDataLenBang(sachBUS.getList());
+            lamMoi();
         }
     }
 
@@ -362,14 +330,12 @@ public class QuanLySachPanel extends JPanel {
     private void xuLyNhapExcel() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Chọn file Excel để nhập sách");
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel Files (*.xlsx)", "xlsx"));
-        
         int result = fileChooser.showOpenDialog(this);
+        
         if (result == JFileChooser.APPROVE_OPTION) {
-            java.io.File selectedFile = fileChooser.getSelectedFile();
+            File selectedFile = fileChooser.getSelectedFile();
             try {
-                // CHÚ Ý DÒNG NÀY: Sẽ báo lỗi đỏ nếu file ExcelHelper của bạn chưa có hàm importSach()
-                java.util.ArrayList<SachDTO> listSachMoi = util.ExcelHelper.importSach(selectedFile.getAbsolutePath());
+                ArrayList<SachDTO> listSachMoi = util.ExcelHelper.importSach(selectedFile.getAbsolutePath());
                 int countSuccess = 0;
                 
                 for (SachDTO s : listSachMoi) {
@@ -390,10 +356,10 @@ public class QuanLySachPanel extends JPanel {
     private void xuLyXuatExcel() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Files (*.xlsx)", "xlsx")); // Đã thêm bộ lọc UI
         fileChooser.setSelectedFile(new File("DanhSach_KhoSach.xlsx")); 
         
         int result = fileChooser.showSaveDialog(this);
+        
         if (result == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
             String filePath = fileToSave.getAbsolutePath();

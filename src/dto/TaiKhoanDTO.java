@@ -5,7 +5,7 @@ public class TaiKhoanDTO {
     private String matKhau;
     private String maNV;
     private String quyenHan;
-    private String trangThai; // "Hiệu lực" hoặc "Bị khóa"
+    private String trangThai; 
 
     public TaiKhoanDTO() {}
 
@@ -17,7 +17,6 @@ public class TaiKhoanDTO {
         this.trangThai = trangThai;
     }
 
-    // --- GETTER & SETTER ---
     public String getTenDangNhap() { return tenDangNhap; }
     public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
 

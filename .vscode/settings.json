@@ -42,7 +42,10 @@
             "e:\\Java\\DOAN\\src\\lib\\log4j-api-2.18.0.jar",
             "e:\\Java\\DOAN\\src\\lib\\commons-codec-1.15.jar",
             "e:\\Java\\DOAN\\src\\lib\\slf4j-api-1.7.36.jar",
-            "src/lib/itextpdf-5.5.13.jar"
+            "src/lib/itextpdf-5.5.13.jar",
+            "src/lib/jcalendar-1.4.jar",
+            "src/lib/jcommon-1.0.24.jar",
+            "src/lib/jfreechart-1.5.3.jar"
         ],
         "exclude": [
             "e:\\Java\\poi-bin-5.2.3\\lib\\commons-codec-1.15.jar"

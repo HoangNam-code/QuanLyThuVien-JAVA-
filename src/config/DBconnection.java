@@ -9,7 +9,7 @@ public class DBconnection {
     // Cấu hình Database
     private static final String HOST = "localhost";
     private static final String PORT = "3306";
-    private static final String DB_NAME = "quanlythuvien_mermaid"; // Đảm bảo tên DB đúng
+    private static final String DB_NAME = "quanlythuvien_mermaid"; 
     private static final String USER = "root";
     private static final String PASS = ""; 
     private static final String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB_NAME + "?useSSL=false&useUnicode=true&characterEncoding=UTF-8";
@@ -17,7 +17,6 @@ public class DBconnection {
     public static Connection getConnection() {
         Connection conn = null;
         try {
-            // Đảm bảo bạn đã thêm thư viện mysql-connector-j-8.x.x.jar vào Libraries
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(URL, USER, PASS);
         } catch (ClassNotFoundException e) {

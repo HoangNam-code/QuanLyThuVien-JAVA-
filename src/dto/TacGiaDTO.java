@@ -19,7 +19,5 @@ public class TacGiaDTO {
     public void setHoDem(String hoDem) { this.hoDem = hoDem; }
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
-    
-    // Hàm phụ để hiển thị Tên đầy đủ trên ComboBox
     public String getHoTen() { return hoDem + " " + ten; }
 }

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 public class NhaXuatBanDAO {
     
-    // Đây chính là hàm selectAll() mà Java đang báo thiếu
     public ArrayList<NhaXuatBanDTO> selectAll() {
         ArrayList<NhaXuatBanDTO> list = new ArrayList<>();
         try {

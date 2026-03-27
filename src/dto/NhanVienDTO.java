@@ -13,10 +13,13 @@ public class NhanVienDTO {
     private String email;
     private String chucVu;
     private String trangThaiTaiKhoan;
+    private double luong;
+    private Date ngayVaoLam;
+    private Date ngayNghiViec;
 
     public NhanVienDTO() {}
 
-    public NhanVienDTO(String maNV, String hoDem, String ten, Date ngaySinh, String gioiTinh, String sdt, String diaChi, String email, String chucVu) {
+    public NhanVienDTO(String maNV, String hoDem, String ten, Date ngaySinh, String gioiTinh, String sdt, String diaChi, String email, String chucVu, double luong, Date ngayVaoLam, Date ngayNghiViec) {
         this.maNV = maNV;
         this.hoDem = hoDem;
         this.ten = ten;
@@ -26,9 +29,11 @@ public class NhanVienDTO {
         this.diaChi = diaChi;
         this.email = email;
         this.chucVu = chucVu;
+        this.luong = luong;
+        this.ngayVaoLam = ngayVaoLam;
+        this.ngayNghiViec = ngayNghiViec;
     }
 
-    // Getter và Setter (Bắt buộc)
     public String getMaNV() { return maNV; }
     public void setMaNV(String maNV) { this.maNV = maNV; }
 
@@ -38,7 +43,6 @@ public class NhanVienDTO {
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
     
-    // Hàm phụ lấy Họ tên đầy đủ
     public String getHoTen() { return hoDem + " " + ten; }
 
     public Date getNgaySinh() { return ngaySinh; }
@@ -61,4 +65,13 @@ public class NhanVienDTO {
 
     public String getTrangThaiTaiKhoan() { return trangThaiTaiKhoan; }
     public void setTrangThaiTaiKhoan(String trangThaiTaiKhoan) { this.trangThaiTaiKhoan = trangThaiTaiKhoan; }
+
+    public double getLuong() { return luong; }
+    public void setLuong(double luong) { this.luong = luong; }
+
+    public Date getNgayVaoLam() { return ngayVaoLam; }
+    public void setNgayVaoLam(Date ngayVaoLam) { this.ngayVaoLam = ngayVaoLam; }
+
+    public Date getNgayNghiViec() { return ngayNghiViec; }
+    public void setNgayNghiViec(Date ngayNghiViec) { this.ngayNghiViec = ngayNghiViec; }
 }

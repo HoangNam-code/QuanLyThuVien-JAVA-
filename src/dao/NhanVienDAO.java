@@ -20,7 +20,8 @@ public class NhanVienDAO {
                 NhanVienDTO nv = new NhanVienDTO(
                     rs.getString("Ma_NV"), rs.getString("Ho_Dem"), rs.getString("Ten"),
                     rs.getDate("Ngay_Sinh"), rs.getString("Gioi_Tinh"), rs.getString("SDT"),
-                    rs.getString("Dia_Chi"), rs.getString("Email"), rs.getString("CHUC_VU")
+                    rs.getString("Dia_Chi"), rs.getString("Email"), rs.getString("CHUC_VU"),
+                    rs.getDouble("Luong"), rs.getDate("Ngay_Vao_Lam"), rs.getDate("Ngay_Nghi_Viec") // Lấy 3 cột mới lên
                 );
                 nv.setTrangThaiTaiKhoan(rs.getString("TrangThaiTaiKhoan"));
                 list.add(nv);
@@ -34,8 +35,7 @@ public class NhanVienDAO {
         int ketQua = 0;
         try {
             Connection conn = DBconnection.getConnection();
-            // CHỈ ĐỊNH RÕ CỘT ĐỂ INSERT KHÔNG BỊ LỆCH
-            String sql = "INSERT INTO NHAN_VIEN (Ma_NV, Ho_Dem, Ten, Ngay_Sinh, Gioi_Tinh, SDT, Dia_Chi, Email, CHUC_VU) VALUES (?,?,?,?,?,?,'',?,?)";
+            String sql = "INSERT INTO NHAN_VIEN (Ma_NV, Ho_Dem, Ten, Ngay_Sinh, Gioi_Tinh, SDT, Dia_Chi, Email, CHUC_VU, Luong, Ngay_Vao_Lam, Ngay_Nghi_Viec) VALUES (?,?,?,?,?,?,'',?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, nv.getMaNV().trim());
             ps.setString(2, nv.getHoDem().trim());
@@ -45,6 +45,10 @@ public class NhanVienDAO {
             ps.setString(6, nv.getSdt().trim());
             ps.setString(7, nv.getEmail().trim());
             ps.setString(8, nv.getChucVu());
+            ps.setDouble(9, nv.getLuong());
+            ps.setDate(10, nv.getNgayVaoLam());
+            ps.setDate(11, nv.getNgayNghiViec());
+            
             ketQua = ps.executeUpdate();
             ps.close(); conn.close();
         } catch (SQLException e) { 
@@ -57,8 +61,7 @@ public class NhanVienDAO {
         int ketQua = 0;
         try {
             Connection conn = DBconnection.getConnection();
-            // BỎ CỘT DIA_CHI RA KHỎI LỆNH UPDATE ĐỂ KHÔNG BỊ GHI ĐÈ BẰNG KHOẢNG TRỐNG
-            String sql = "UPDATE NHAN_VIEN SET Ho_Dem=?, Ten=?, Ngay_Sinh=?, Gioi_Tinh=?, SDT=?, Email=?, CHUC_VU=? WHERE Ma_NV=?";
+            String sql = "UPDATE NHAN_VIEN SET Ho_Dem=?, Ten=?, Ngay_Sinh=?, Gioi_Tinh=?, SDT=?, Email=?, CHUC_VU=?, Luong=?, Ngay_Vao_Lam=?, Ngay_Nghi_Viec=? WHERE Ma_NV=?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, nv.getHoDem().trim());
             ps.setString(2, nv.getTen().trim());
@@ -67,7 +70,11 @@ public class NhanVienDAO {
             ps.setString(5, nv.getSdt().trim());
             ps.setString(6, nv.getEmail().trim());
             ps.setString(7, nv.getChucVu());
-            ps.setString(8, nv.getMaNV().trim()); 
+            ps.setDouble(8, nv.getLuong());
+            ps.setDate(9, nv.getNgayVaoLam());
+            ps.setDate(10, nv.getNgayNghiViec());
+            ps.setString(11, nv.getMaNV().trim()); 
+            
             ketQua = ps.executeUpdate();
             ps.close(); conn.close();
         } catch (SQLException e) { 
@@ -80,15 +87,12 @@ public class NhanVienDAO {
         int ketQua = 0;
         try {
             Connection conn = DBconnection.getConnection();
-            
-            // BƯỚC BẢO VỆ 1: Xóa tài khoản liên kết (nếu có) trước để không bị lỗi khóa ngoại
             String sqlTK = "DELETE FROM TAI_KHOAN WHERE Ma_NV=?";
             PreparedStatement psTK = conn.prepareStatement(sqlTK);
             psTK.setString(1, maNV.trim());
             psTK.executeUpdate();
             psTK.close();
 
-            // BƯỚC 2: Xóa nhân viên an toàn
             String sql = "DELETE FROM NHAN_VIEN WHERE Ma_NV=?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, maNV.trim());

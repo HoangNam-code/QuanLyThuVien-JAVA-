@@ -39,7 +39,7 @@ public class TaiKhoanDAO {
             ps.setString(2, tk.getMaNV());
             ps.setString(3, tk.getMatKhau());
             ps.setString(4, tk.getQuyenHan());
-            ps.setString(5, tk.getTrangThai()); // Sẽ gửi số "1" xuống
+            ps.setString(5, tk.getTrangThai()); 
             return ps.executeUpdate(); 
         } catch (SQLException e) {
             System.err.println("Lỗi insert tài khoản: " + e.getMessage());
@@ -88,7 +88,7 @@ public class TaiKhoanDAO {
             Connection conn = DBconnection.getConnection();
             String sql = "UPDATE TAI_KHOAN SET TRANG_THAI = ? WHERE MA_NV = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, trangThaiMoi); // Cập nhật thành "0" hoặc "1"
+            ps.setString(1, trangThaiMoi); 
             ps.setString(2, maNV);
             ketQua = ps.executeUpdate();
             ps.close(); conn.close();

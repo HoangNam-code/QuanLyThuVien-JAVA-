@@ -5,7 +5,8 @@ import dto.TaiKhoanDTO;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.prefs.Preferences; // Thư viện dùng để Ghi nhớ đăng nhập
+import java.io.File;
+import java.util.prefs.Preferences; 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
@@ -27,11 +28,33 @@ public class LoginDialog extends JFrame {
     private final String PREF_USER = "username";
     private final String PREF_PASS = "password";
     private final String PREF_REM = "remember";
+    
+    // Biến chứa ảnh nền cho form đăng nhập
+    private Image bgImage;
 
     public LoginDialog() {
+        // --- ĐÃ SỬA LỖI LOAD ẢNH TẠI ĐÂY ---
+        try {
+            // CÁCH 1: Tìm ảnh theo Classpath (Chuẩn nhất, chống lỗi khi xuất ra file .jar)
+            java.net.URL imgURL = getClass().getResource("/img/bg_thuvien.jpg");
+            if (imgURL != null) {
+                bgImage = new ImageIcon(imgURL).getImage();
+            } else {
+                // CÁCH 2 (Dự phòng): Tìm ảnh theo đường dẫn tĩnh nếu IDE chưa kịp build file
+                File f = new File("src/img/bg_thuvien.jpg");
+                if (f.exists()) {
+                    bgImage = new ImageIcon(f.getAbsolutePath()).getImage();
+                } else {
+                    System.out.println("Lỗi: Hoàn toàn không tìm thấy ảnh tại src/img/bg_thuvien.jpg");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi load ảnh: " + e.getMessage());
+        }
+        
         initComponents();
         addEvents();
-        loadSavedCredentials(); // Gọi hàm load thông tin đã lưu khi mở form
+        loadSavedCredentials(); 
     }
 
     private void initComponents() {
@@ -50,34 +73,48 @@ public class LoginDialog extends JFrame {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (bgImage != null) {
+                    // Vẽ tấm ảnh nền rõ nét 100%
+                    g2.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
+                } else {
+                    // Nếu lỗi không load được ảnh thì tô màu xanh đặc
+                    g2.setColor(COLOR_SGU_BLUE);
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                }
             }
         };
-        pnlLeft.setBackground(COLOR_SGU_BLUE);
         pnlLeft.setLayout(new GridBagLayout()); 
 
         JPanel pnlBrand = new JPanel();
         pnlBrand.setLayout(new BoxLayout(pnlBrand, BoxLayout.Y_AXIS));
-        pnlBrand.setOpaque(false); 
+        pnlBrand.setOpaque(false); // Trong suốt để thấy nền phía sau
 
         // Logo SGU
         JLabel lblLogo = new JLabel();
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
         try {
-            ImageIcon originalIcon = new ImageIcon(getClass().getResource("/img/sgu_logo.png"));
-            Image originalImage = originalIcon.getImage();
-            int targetSize = 180;
-            BufferedImage resizedImg = new BufferedImage(targetSize, targetSize, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = resizedImg.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2.drawImage(originalImage, 0, 0, targetSize, targetSize, null);
-            g2.dispose();
-            lblLogo.setIcon(new ImageIcon(resizedImg));
+            java.net.URL logoURL = getClass().getResource("/img/sgu_logo.png");
+            if (logoURL != null) {
+                Image originalImage = new ImageIcon(logoURL).getImage();
+                int targetSize = 180;
+                BufferedImage resizedImg = new BufferedImage(targetSize, targetSize, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = resizedImg.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.drawImage(originalImage, 0, 0, targetSize, targetSize, null);
+                g2.dispose();
+                lblLogo.setIcon(new ImageIcon(resizedImg));
+            } else {
+                lblLogo.setText("<html><h1 style='color:white; font-size:40px'>SGU</h1></html>");
+            }
         } catch (Exception e) {
             lblLogo.setText("<html><h1 style='color:white; font-size:40px'>SGU</h1></html>");
         }
 
-        // Chữ Tiêu đề
-        JLabel lblTitleSGU = new JLabel("<html><div style='text-align: center; color: white;'>"
+        // Chữ Tiêu đề (Có thêm chút bóng đổ nhẹ bằng CSS để dễ đọc nếu ảnh bị sáng)
+        JLabel lblTitleSGU = new JLabel("<html><div style='text-align: center; color: white; text-shadow: 2px 2px 4px #000000;'>"
                 + "<h2 style='font-family: Segoe UI; font-weight: bold; font-size: 28px; margin-bottom: 10px;'>ĐẠI HỌC SÀI GÒN</h2>"
                 + "<p style='font-family: Segoe UI; font-size: 18px; font-weight: 300; letter-spacing: 1px;'>WELCOME TO SGU LIBRARY</p>"
                 + "</div></html>");
@@ -218,7 +255,6 @@ public class LoginDialog extends JFrame {
         });
     }
 
-    // Hàm lấy thông tin đăng nhập đã lưu từ hệ thống
     private void loadSavedCredentials() {
         boolean isRemembered = prefs.getBoolean(PREF_REM, false);
         if (isRemembered) {
@@ -241,7 +277,6 @@ public class LoginDialog extends JFrame {
         TaiKhoanDTO tk = tkBUS.dangNhap(user, pass);
 
         if (tk != null) {
-            // Đăng nhập thành công -> Xử lý lưu hoặc xoá mật khẩu nếu Checkbox được chọn
             if (chkRemember.isSelected()) {
                 prefs.put(PREF_USER, user);
                 prefs.put(PREF_PASS, pass);
@@ -255,11 +290,9 @@ public class LoginDialog extends JFrame {
             JOptionPane.showMessageDialog(this, "Đăng nhập thành công!\nXin chào: " + tk.getTenDangNhap() + "\nQuyền: " + tk.getQuyenHan(), "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             
             this.dispose(); 
-            // Truyền DTO vào MainFrame để mở phân quyền hệ thống
             MainFrame main = new MainFrame(tk); 
             main.setVisible(true);
         } else {
-            // Bị sai mật khẩu hoặc tài khoản có TRANG_THAI = 0
             JOptionPane.showMessageDialog(this, "Sai thông tin đăng nhập, hoặc Tài khoản đã bị khoá!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }

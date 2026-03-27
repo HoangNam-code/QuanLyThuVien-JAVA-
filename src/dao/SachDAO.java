@@ -35,7 +35,6 @@ public class SachDAO {
     public int insert(SachDTO s) {
         try {
             Connection conn = DBconnection.getConnection();
-            // Lưu ý: Thứ tự dấu ? phải khớp với thứ tự setString bên dưới
             String sql = "INSERT INTO SACH (Ma_Sach, Ten_Sach, Nam_XB, Ma_TL, Don_Gia, So_Luong, Ma_TG, Ma_NXB, So_Trang) VALUES (?,?,?,?,?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, s.getMaSach());
@@ -78,8 +77,6 @@ public class SachDAO {
     public int delete(String maSach) {
         try {
             Connection conn = DBconnection.getConnection();
-            // Lưu ý: Nếu sách đã có trong Phiếu Mượn/Nhập, lệnh này sẽ lỗi do ràng buộc Khóa Ngoại.
-            // Lúc đó nên thông báo: "Không thể xóa sách đã phát sinh giao dịch!"
             String sql = "DELETE FROM SACH WHERE Ma_Sach=?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, maSach.trim());
@@ -91,8 +88,37 @@ public class SachDAO {
             return 0; 
         }
     }
+    public boolean giamSoLuong(String maSach, int soLuong) {
+        String sql = "UPDATE SACH SET So_Luong = So_Luong - ? WHERE Ma_Sach = ? AND So_Luong >= ?";
+            try {
+                Connection conn = DBconnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setInt(1, soLuong);
+                ps.setString(2, maSach);
+                ps.setInt(3, soLuong);
+                return ps.executeUpdate() > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        return false;
+    }
 
-   // [Mục 9] Tìm kiếm nâng cao (Search Engine)
+    //tăng số lượng trong tồn kho
+    public boolean tangSoLuong(String maSach, int soLuong) {
+        String sql = "UPDATE SACH SET So_Luong = So_Luong + ? WHERE Ma_Sach = ?";
+        try {
+            Connection conn = DBconnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, soLuong);
+            ps.setString(2, maSach);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+   //tìm kiếm nâng cao
    public ArrayList<SachDTO> selectByCondition(String maTL, String maTG, String maNXB, int namXB, double minGia, double maxGia) {
     ArrayList<SachDTO> list = new ArrayList<>();
     try {
